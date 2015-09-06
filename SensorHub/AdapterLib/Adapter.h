@@ -135,12 +135,12 @@ namespace AdapterLib
 		/// <returns>
 		/// The temperature in Celcius (C)
 		/// </returns>
-		property float Temperature
+		property float TemperatureCelcius
 		{
 			float get() {
 				uint32 raw_temperature_data = rawTemperature();
 				double temperature_C = (((175.72 * raw_temperature_data) / 65536) - 46.85);
-
+				
 				return temperature_C;
 				//return Convert::ToSingle(doubleVal);
 			}
@@ -151,6 +151,7 @@ namespace AdapterLib
 		uint32  rawTemperature();
 		uint32  rawHumidity();
 		uint32  rawPressure();
+		float	Celcius2Fahrenheits(float Celcius);
 	
 		bool ValidHtdu21dCyclicRedundancyCheck(uint32 data_, byte crc_);
 

@@ -32,16 +32,25 @@ using namespace Windows::Devices::Enumeration;
 using namespace Windows::Foundation;
 
 // GPIO Device
-String^ deviceName = "Rpi2_GPIO_Device";
-String^ vendorName = "MTC Lab";
+String^ deviceName = "WeatherStation";
+String^ vendorName = "MTC Moscow";
 String^ modelName = "SensorHub";
 String^ version = "1.0.0.0";
 String^ serialNumber = "1111111111111";
 String^ description = "A Rpi2  GPIO Device created by Max Khlupnov in Microsoft Technology Center Moscow ";
 
 String^ temperaturePropertyName = "Temperature";
-String^ temperatureRawValueName = "RawTemperatureValue";
-int temperatureValueData = -1;
+String^ temperatureCelsiusValueName = "Celsius";
+String^ temperatureFahrenheitsValueName = "Fahrenheits";
+ValueType^  temperatureCelsiusValueData = -1.00;
+ValueType^  temperatureFahrenheitsValueData = -1.00;
+
+String^ pressurePropertyName = "Pressure";
+String^ pressurePascalValueName = "Pascal";
+String^ pressureInchesOfMercuryValueName = "InchesOfMercury";
+ValueType^  pressurePascalValueData = -1.00;
+ValueType^ pressureInchesOfMercuryValueData = -1.00;
+
 
 /* GPIO Device Pin-5 Property
 const int PIN_NUMBER = 5;
@@ -90,7 +99,7 @@ namespace AdapterLib
         Windows::ApplicationModel::PackageId^ packageId = package->Id;
         Windows::ApplicationModel::PackageVersion versionFromPkg = packageId->Version;
 
-        this->vendor = L"MaximKhlupnov";
+        this->vendor = L"MTC Moscow";
         this->adapterName = L"SensorHub";
         // the adapter prefix must be something like "com.mycompany" (only alpha num and dots)
         // it is used by the Device System Bridge as root string for all services and interfaces it exposes
@@ -171,22 +180,25 @@ namespace AdapterLib
 				htdu21d = htdu21dDevice;
 			});
 
+			/*
+			* Establish an I2C connection to the MPL3115A2
+			*
+			* Instantiate the I2cConnectionSettings using the device address of the MPL3115A2
+			* - Set the I2C bus speed of connection to fast mode
+			* - Set the I2C sharing mode of the connection to shared
+			*
+			* Instantiate the the MPL3115A2 I2C device using the device id and the I2cConnectionSettings
+			*/
+			I2cConnectionSettings^ mpl3115a2_connection = ref new I2cConnectionSettings(MPL3115A2_I2C_ADDRESS);
+			mpl3115a2_connection->BusSpeed = I2cBusSpeed::FastMode;
+			mpl3115a2_connection->SharingMode = I2cSharingMode::Shared;
+			IAsyncOperation<I2cDevice^>^  mpl3115a2_information_collection = I2cDevice::FromIdAsync(deviceId, mpl3115a2_connection);
+			auto mpl3115a2EnumTask = create_task(mpl3115a2_information_collection);
+			mpl3115a2EnumTask.then([this](I2cDevice^ mpl3115a2Device) {
+				mpl3115a2 = mpl3115a2Device;
+			});
+
 		});
-		/*
-		* Establish an I2C connection to the MPL3115A2
-		*
-		* Instantiate the I2cConnectionSettings using the device address of the MPL3115A2
-		* - Set the I2C bus speed of connection to fast mode
-		* - Set the I2C sharing mode of the connection to shared
-		*
-		* Instantiate the the MPL3115A2 I2C device using the device id and the I2cConnectionSettings
-		
-		I2cConnectionSettings mpl3115a2_connection = new I2cConnectionSettings(MPL3115A2_I2C_ADDRESS);
-		mpl3115a2_connection.BusSpeed = I2cBusSpeed.FastMode;
-		mpl3115a2_connection.SharingMode = I2cSharingMode.Shared;
-
-		mpl3115a2 = await I2cDevice.FromIdAsync(deviceId, mpl3115a2_connection);*/
-
 
     }
 
@@ -228,16 +240,31 @@ namespace AdapterLib
 		gpioDeviceDesc.SerialNumer = serialNumber;
 		gpioDeviceDesc.Description = description;
 
-		// Define Temperature as device property. Device contains properties
+		// Define Temperature C as device property. Device contains properties
 		AdapterProperty^ temperature_Property = ref new AdapterProperty(temperaturePropertyName, "");
-		temperatureValueData = static_cast<int>(this->rawTemperature());
-		AdapterValue^ temperatureAttr_Value = ref new AdapterValue(temperatureRawValueName, temperatureValueData);
-		temperature_Property += temperatureAttr_Value;
+		
+		temperatureCelsiusValueData = static_cast<float64>(this->TemperatureCelcius);
+		AdapterValue^ temperatureCelsiusAttr_Value = ref new AdapterValue(temperatureCelsiusValueName, temperatureCelsiusValueData);
+		temperature_Property += temperatureCelsiusAttr_Value;
 
+		temperatureFahrenheitsValueData = static_cast<float64>(this->Celcius2Fahrenheits(static_cast<float64>(temperatureCelsiusValueData)));
+		AdapterValue^ temperatureFahrenheitsAttr_Value = ref new AdapterValue(temperatureFahrenheitsValueName, temperatureFahrenheitsValueData);
+		temperature_Property += temperatureFahrenheitsAttr_Value;
+
+
+		// Define Pressure as device property. Device contains properties
+		AdapterProperty^ pressureProperty = ref new AdapterProperty(pressurePropertyName, "");
+
+		pressurePascalValueData = static_cast<float64>(this->TemperatureCelcius);
+		AdapterValue^ pressurePascalAttr_Value = ref new AdapterValue(pressurePascalValueName, pressurePascalValueData);
+		pressureProperty += pressurePascalAttr_Value;
 
 		// Finally, put it all into a new device
 		AdapterDevice^ gpioDevice = ref new AdapterDevice(&gpioDeviceDesc);
+
 		gpioDevice->AddProperty(temperature_Property);
+		gpioDevice->AddProperty(pressureProperty);
+
 		devices.push_back(std::move(gpioDevice));
 
 
@@ -320,11 +347,23 @@ namespace AdapterLib
         UNREFERENCED_PARAMETER(RequestPtr);
 		UNREFERENCED_PARAMETER(AttributeName);
 
-		temperatureValueData = static_cast<int>(this->rawTemperature());
+		
 
 		AdapterProperty^ adapterProperty = dynamic_cast<AdapterProperty^>(Property);
-		AdapterValue^ attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
-		attribute->Data = temperatureValueData;
+		AdapterValue^ attribute;//ynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+		
+		if (Property->Name->Equals(temperaturePropertyName)) {
+			temperatureCelsiusValueData = static_cast<float64>(this->TemperatureCelcius);
+			if (AttributeName->Equals(temperatureCelsiusValueName)) {				
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+				attribute->Data = temperatureCelsiusValueData;
+			}
+			if (AttributeName->Equals(temperatureFahrenheitsValueName)) {
+				temperatureFahrenheitsValueData = static_cast<float64>(this->Celcius2Fahrenheits(static_cast<float64>(temperatureCelsiusValueData)));
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
+				attribute->Data = temperatureFahrenheitsValueData;
+			}
+		}
 
 		*ValuePtr = attribute;
 
@@ -494,7 +533,64 @@ namespace AdapterLib
 	}
 	uint32 Adapter::rawPressure()
 	{
-		return ERROR_SUCCESS;
+		uint32 pressure = 0;
+		Platform::Array<BYTE>^ reg_data = ref new Platform::Array<BYTE>(1);
+		Platform::Array<BYTE>^ raw_pressure_data = ref new Platform::Array<BYTE>(3);
+
+		// Toggle one shot
+
+		/*
+		* Request pressure data from the MPL3115A2
+		* MPL3115A2 datasheet: http://dlnmh9ip6v2uc.cloudfront.net/datasheets/Sensors/Pressure/MPL3115A2.pdf
+		*
+		* Update Control Register 1 Flags
+		* - Read data at CTRL_REG1 (0x26) on the MPL3115A2
+		* - Update the SBYB (bit 0) and OST (bit 1) flags to STANDBY and initiate measurement, respectively.
+		* -- SBYB flag (bit 0)
+		* --- off = Part is in STANDBY mode
+		* --- on = Part is ACTIVE
+		* -- OST flag (bit 1)
+		* --- off = auto-clear
+		* --- on = initiate measurement
+		* - Write the resulting value back to Control Register 1
+		*/
+		mpl3115a2->WriteRead(ref new Platform::Array<BYTE>{ CTRL_REG1 }, reg_data);
+		reg_data[0] &= 0xFE;  // ensure SBYB (bit 0) is set to STANDBY
+		reg_data[0] |= 0x02;  // ensure OST (bit 1) is set to initiate measurement
+		mpl3115a2->Write(ref new Platform::Array<BYTE>{ CTRL_REG1, reg_data[0] });
+
+		/*
+		* Wait 10ms to allow MPL3115A2 to process the pressure value
+		*/
+		// Task->Delay(10);
+		
+
+		/*
+		* Write the address of the register of the most significant byte for the pressure value, OUT_P_MSB (0x01)
+		* Read the three bytes returned by the MPL3115A2
+		* - byte 0 - MSB of the pressure
+		* - byte 1 - CSB of the pressure
+		* - byte 2 - LSB of the pressure
+		*/
+		mpl3115a2->WriteRead(ref new Platform::Array<BYTE>{ OUT_P_MSB }, raw_pressure_data);
+
+		/*
+		* Reconstruct the result using all three bytes returned from the device
+		*/
+		pressure = (uint32)(raw_pressure_data[0] << 16);
+		pressure |= (uint32)(raw_pressure_data[1] << 8);
+		pressure |= raw_pressure_data[2];
+
+		return pressure;
+
+	}
+
+	/*
+		Convert temperature from Celcium to Farenheits
+	*/
+	float Adapter::Celcius2Fahrenheits(float Celcius)
+	{
+		return  Celcius * 1.8 + 32;
 	}
 
 	
