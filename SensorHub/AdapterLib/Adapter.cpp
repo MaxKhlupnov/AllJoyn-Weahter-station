@@ -39,7 +39,6 @@ String^ version = "1.0.0.0";
 String^ serialNumber = "1111111111111";
 String^ description = "A Rpi2  GPIO Device created by Max Khlupnov in Microsoft Technology Center Moscow ";
 
-String^ temperatureInterfaceHint = "Temp";
 String^ temperaturePropertyName = "Temperature";
 String^ temperatureCelsiusValueName = "Celsius";
 String^ temperatureFahrenheitsValueName = "Fahrenheits";
@@ -55,6 +54,11 @@ ValueType^  pressurePascalValueData = -1.00;
 ValueType^ pressureInchesOfMercuryValueData = -1.00;
 ValueType^ pressureMmOfMercuryValueData = -1.00;
 ValueType^  pressureAltitudeValueData = -1.00;
+
+
+String^ humidityPropertyName = "Humidity";
+String^ humidityRHValueName = "RH";
+ValueType^  humidityRHValueData = -1.00;
 
 
 // LED Control Pins
@@ -272,11 +276,17 @@ namespace AdapterLib
 		AdapterValue^ pressureAltitudeAttr_Value = ref new AdapterValue(pressureAltitudeValueName, pressureAltitudeValueData);
 		pressureProperty += pressureAltitudeAttr_Value;
 
+		// Define Humidity as device property. Device contains properties
+		AdapterProperty^ humidityProperty = ref new AdapterProperty(humidityPropertyName, this->FormatInterfaceHint(humidityPropertyName));
+		humidityRHValueData = static_cast<float64>(this->Humidity);
+		AdapterValue^ humidityRHAttr_Value = ref new AdapterValue(humidityRHValueName, humidityRHValueData);
+		humidityProperty += humidityRHAttr_Value;
 
 		// Finally, put it all into a new device
 		AdapterDevice^ gpioDevice = ref new AdapterDevice(&gpioDeviceDesc);
 
-		gpioDevice->AddProperty(temperature_Property);
+		gpioDevice->AddProperty(temperature_Property);		
+		gpioDevice->AddProperty(humidityProperty);
 		gpioDevice->AddProperty(pressureProperty);
 
 		devices.push_back(std::move(gpioDevice));
@@ -399,6 +409,13 @@ namespace AdapterLib
 				attribute->Data = static_cast<float64>(this->Pascal2Altitude(static_cast<float64>(pressurePascalValueData)));
 			}
 		}
+
+		if (Property->Name->Equals(humidityPropertyName)) {
+			humidityRHValueData = static_cast<float64>(this->Humidity);
+			attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+			attribute->Data = humidityRHValueData;
+		}
+
 		*ValuePtr = attribute;
 
         return ERROR_SUCCESS;
@@ -568,7 +585,52 @@ namespace AdapterLib
 
 	uint32 Adapter::rawHumidity()
 	{
-		return ERROR_SUCCESS;
+		uint32 humidity = 0;
+		Platform::Array<BYTE>^ i2c_humidity_data = ref new Platform::Array<BYTE>(3);
+
+		/*
+		* Request humidity data from the HTDU21D
+		* HTDU21D datasheet: http://dlnmh9ip6v2uc.cloudfront.net/datasheets/BreakoutBoards/HTU21D.pdf
+		*
+		* Write the SAMPLE_HUMIDITY_HOLD command (0xE5) to the HTDU21D
+		* - HOLD means it will block the I2C line while the HTDU21D calculates the humidity value
+		*
+		* Read the three bytes returned by the HTDU21D
+		* - byte 0 - MSB of the humidity
+		* - byte 1 - LSB of the humidity
+		* - byte 2 - CRC
+		*
+		* NOTE: Holding the line allows for a `WriteRead` style transaction
+		*/
+		htdu21d->WriteRead(ref new Platform::Array<BYTE>{ SAMPLE_HUMIDITY_HOLD }, i2c_humidity_data);
+
+		/*
+		* Reconstruct the result using the first two bytes returned from the device
+		*
+		* NOTE: Zero out the status bits (bits 0 and 1 of the LSB), but keep them in place
+		* - status bit 0 - not assigned
+		* - status bit 1
+		* -- off = temperature data
+		* -- on = humdity data
+		*/
+		humidity = (uint32)(i2c_humidity_data[0] << 8);
+		humidity |= (uint32)(i2c_humidity_data[1] & 0xFC);
+
+		/*
+		* Test the integrity of the data
+		*
+		* Ensure the data returned is humidity data (hint: byte 1, bit 1)
+		* Test cyclic redundancy check (CRC) byte
+		*
+		* WARNING: HTDU21D firmware error - XOR CRC byte with 0x62 before attempting to validate
+		*/
+		bool humidity_data = (0x00 != (0x02 & i2c_humidity_data[1]));
+		if (!humidity_data) { return 0; }
+
+		bool valid_data = ValidHtdu21dCyclicRedundancyCheck(humidity, (byte)(i2c_humidity_data[2] ^ 0x62));
+		if (!valid_data) { return 0; }
+
+		return humidity;
 	}
 	uint32 Adapter::rawPressure()
 	{

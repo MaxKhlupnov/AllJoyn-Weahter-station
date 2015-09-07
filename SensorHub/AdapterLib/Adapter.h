@@ -147,6 +147,22 @@ namespace AdapterLib
 		}
 
 		/// <summary>
+		/// Calculate relative humidity
+		/// </summary>
+		/// <returns>
+		/// The relative humidity
+		/// </returns>
+		property float Humidity
+		{
+			float get()
+			{
+				uint32 raw_humidity_data = rawHumidity();
+				return (((125.0 * raw_humidity_data) / 65536) - 6.0);
+			
+			}
+		}
+
+		/// <summary>
 		/// Read pressure data
 		/// </summary>
 		/// <returns>
