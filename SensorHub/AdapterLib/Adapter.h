@@ -146,14 +146,34 @@ namespace AdapterLib
 			}
 		}
 
+		/// <summary>
+		/// Read pressure data
+		/// </summary>
+		/// <returns>
+		/// The pressure in Pascals (Pa)
+		/// </returns>
+		property float Pressure
+		{
+			float get()
+		{
+			uint32 raw_pressure_data = rawPressure();
+			double pressure_Pa = ((raw_pressure_data >> 6) + (((raw_pressure_data >> 4) & 0x03) / 4.0));
+
+			return pressure_Pa;//Convert.ToSingle(pressure_Pa);
+		}
+		}
+
     private:
         uint32 createSignals();
 		uint32  rawTemperature();
 		uint32  rawHumidity();
 		uint32  rawPressure();
 		float	Celcius2Fahrenheits(float Celcius);
-	
-		bool ValidHtdu21dCyclicRedundancyCheck(uint32 data_, byte crc_);
+		float	Pascal2InchesOfMercury(float Pascal);
+		float	Pascal2MmOfMercury(float Pascal);
+		float	Pascal2Altitude(float Pascal);
+		bool	ValidHtdu21dCyclicRedundancyCheck(uint32 data_, byte crc_);
+		Platform::String^ FormatInterfaceHint(Platform::String^ propertyName);
 
     private:
         Platform::String^ vendor;

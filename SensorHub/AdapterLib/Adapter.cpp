@@ -33,12 +33,13 @@ using namespace Windows::Foundation;
 
 // GPIO Device
 String^ deviceName = "WeatherStation";
-String^ vendorName = "MTC Moscow";
+String^ vendorName = "Max Khlupnov";
 String^ modelName = "SensorHub";
 String^ version = "1.0.0.0";
 String^ serialNumber = "1111111111111";
 String^ description = "A Rpi2  GPIO Device created by Max Khlupnov in Microsoft Technology Center Moscow ";
 
+String^ temperatureInterfaceHint = "Temp";
 String^ temperaturePropertyName = "Temperature";
 String^ temperatureCelsiusValueName = "Celsius";
 String^ temperatureFahrenheitsValueName = "Fahrenheits";
@@ -48,17 +49,12 @@ ValueType^  temperatureFahrenheitsValueData = -1.00;
 String^ pressurePropertyName = "Pressure";
 String^ pressurePascalValueName = "Pascal";
 String^ pressureInchesOfMercuryValueName = "InchesOfMercury";
+String^ pressureMmOfMercuryValueName = "MmOfMercury";
+String^ pressureAltitudeValueName = "Altitude";
 ValueType^  pressurePascalValueData = -1.00;
 ValueType^ pressureInchesOfMercuryValueData = -1.00;
-
-
-/* GPIO Device Pin-5 Property
-const int PIN_NUMBER = 5;
-String^ pinName = "Pin-5";
-
-// Pin-5 Property Attribute
-String^ pinValueName = "PinValue";
-int  pinValueData = -1;*/
+ValueType^ pressureMmOfMercuryValueData = -1.00;
+ValueType^  pressureAltitudeValueData = -1.00;
 
 
 // LED Control Pins
@@ -240,24 +236,42 @@ namespace AdapterLib
 		gpioDeviceDesc.SerialNumer = serialNumber;
 		gpioDeviceDesc.Description = description;
 
-		// Define Temperature C as device property. Device contains properties
-		AdapterProperty^ temperature_Property = ref new AdapterProperty(temperaturePropertyName, "");
-		
+		// Define Temperature C as device property. Device contains properties		
+		AdapterProperty^ temperature_Property = ref new AdapterProperty(temperaturePropertyName, this->FormatInterfaceHint(temperaturePropertyName));
+
 		temperatureCelsiusValueData = static_cast<float64>(this->TemperatureCelcius);
-		AdapterValue^ temperatureCelsiusAttr_Value = ref new AdapterValue(temperatureCelsiusValueName, temperatureCelsiusValueData);
+		AdapterValue^ temperatureCelsiusAttr_Value = ref new AdapterValue(temperatureCelsiusValueName, temperatureCelsiusValueData);		
 		temperature_Property += temperatureCelsiusAttr_Value;
 
 		temperatureFahrenheitsValueData = static_cast<float64>(this->Celcius2Fahrenheits(static_cast<float64>(temperatureCelsiusValueData)));
-		AdapterValue^ temperatureFahrenheitsAttr_Value = ref new AdapterValue(temperatureFahrenheitsValueName, temperatureFahrenheitsValueData);
+		AdapterValue^ temperatureFahrenheitsAttr_Value = ref new AdapterValue(temperatureFahrenheitsValueName, temperatureFahrenheitsValueData);		
 		temperature_Property += temperatureFahrenheitsAttr_Value;
-
+		
+		
 
 		// Define Pressure as device property. Device contains properties
-		AdapterProperty^ pressureProperty = ref new AdapterProperty(pressurePropertyName, "");
+		AdapterProperty^ pressureProperty = ref new AdapterProperty(pressurePropertyName, this->FormatInterfaceHint(pressurePropertyName));
 
-		pressurePascalValueData = static_cast<float64>(this->TemperatureCelcius);
+		// Add Pressure value in Pascal
+		pressurePascalValueData = static_cast<float64>(this->Pressure);
 		AdapterValue^ pressurePascalAttr_Value = ref new AdapterValue(pressurePascalValueName, pressurePascalValueData);
 		pressureProperty += pressurePascalAttr_Value;
+
+		//Value of pressure in millimeters of Mercury (metric)
+		pressureMmOfMercuryValueData = static_cast<float64>(this->Pascal2MmOfMercury(static_cast<float64>(pressurePascalValueData)));
+		AdapterValue^ pressureMmOfMercuryAttr_Value = ref new AdapterValue(pressureMmOfMercuryValueName, pressureMmOfMercuryValueData);
+		pressureProperty += pressureMmOfMercuryAttr_Value;
+
+		//Value of pressure in inches of Mercury (imperial)
+		pressureInchesOfMercuryValueData = static_cast<float64>(this->Pascal2InchesOfMercury(static_cast<float64>(pressurePascalValueData)));
+		AdapterValue^ pressureInchesOfMercuryAttr_Value = ref new AdapterValue(pressureInchesOfMercuryValueName, pressureInchesOfMercuryValueData);
+		pressureProperty += pressureInchesOfMercuryAttr_Value;
+
+		//Value of pressure as Altitude
+		pressureAltitudeValueData = static_cast<float64>(this->Pascal2Altitude(static_cast<float64>(pressureAltitudeValueData)));
+		AdapterValue^ pressureAltitudeAttr_Value = ref new AdapterValue(pressureAltitudeValueName, pressureAltitudeValueData);
+		pressureProperty += pressureAltitudeAttr_Value;
+
 
 		// Finally, put it all into a new device
 		AdapterDevice^ gpioDevice = ref new AdapterDevice(&gpioDeviceDesc);
@@ -365,6 +379,26 @@ namespace AdapterLib
 			}
 		}
 
+		if (Property->Name->Equals(pressurePropertyName)) {
+			pressurePascalValueData = static_cast<float64>(this->Pressure);
+			
+			if (AttributeName->Equals(pressurePascalValueName)) {
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+				attribute->Data = pressurePascalValueData;
+			}
+			if (AttributeName->Equals(pressureMmOfMercuryValueName)) {
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
+				attribute->Data = static_cast<float64>(this->Pascal2MmOfMercury(static_cast<float64>(pressurePascalValueData)));
+			}
+			if (AttributeName->Equals(pressureInchesOfMercuryValueName)) {
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(2));
+				attribute->Data = static_cast<float64>(this->Pascal2InchesOfMercury(static_cast<float64>(pressurePascalValueData)));
+			}			
+			if (AttributeName->Equals(pressureAltitudeValueName)) {
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(3));
+				attribute->Data = static_cast<float64>(this->Pascal2Altitude(static_cast<float64>(pressurePascalValueData)));
+			}
+		}
 		*ValuePtr = attribute;
 
         return ERROR_SUCCESS;
@@ -527,6 +561,11 @@ namespace AdapterLib
 		return (crc_ == crc_data);
 	}
 
+	Platform::String^ Adapter::FormatInterfaceHint(Platform::String^ propertyName)
+	{
+		return this->exposedAdapterPrefix + L"." + this->AdapterName + L"." + propertyName;
+	}
+
 	uint32 Adapter::rawHumidity()
 	{
 		return ERROR_SUCCESS;
@@ -593,5 +632,25 @@ namespace AdapterLib
 		return  Celcius * 1.8 + 32;
 	}
 
-	
+	/*
+		Inches of mercury, (inHg and "Hg) is a unit of measurement for pressure.
+		https://en.wikipedia.org/wiki/Inch_of_mercury
+	*/
+	float Adapter::Pascal2InchesOfMercury(float Pascal) {
+		return Pascal / 3376.85;
+	}
+
+	float Adapter::Pascal2MmOfMercury(float Pascal) {
+		return (760 * Pascal) / 101325;
+	}
+
+	/*
+		Calculates the altitude in meters (m) using the US Standard Atmosphere 1976 (NASA) formula
+	*/
+	float Adapter::Pascal2Altitude(float Pascal) {
+		// Calculate using US Standard Atmosphere 1976 (NASA)
+		return (44330.77 * (1 - std::pow((Pascal / 101326), 0.1902632)) /*+ OFF_H*/); // OFF_H (disabled) is the user offset
+	}
+
+
 } // namespace AdapterLib
