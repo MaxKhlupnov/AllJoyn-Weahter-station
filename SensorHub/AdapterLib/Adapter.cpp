@@ -689,7 +689,7 @@ namespace AdapterLib
 	/*
 		Convert temperature from Celcium to Farenheits
 	*/
-	float Adapter::Celcius2Fahrenheits(float Celcius)
+	double Adapter::Celcius2Fahrenheits(float Celcius)
 	{
 		return  Celcius * 1.8 + 32;
 	}
@@ -698,18 +698,18 @@ namespace AdapterLib
 		Inches of mercury, (inHg and "Hg) is a unit of measurement for pressure.
 		https://en.wikipedia.org/wiki/Inch_of_mercury
 	*/
-	float Adapter::Pascal2InchesOfMercury(float Pascal) {
+	double Adapter::Pascal2InchesOfMercury(float Pascal) {
 		return Pascal / 3376.85;
 	}
 
-	float Adapter::Pascal2MmOfMercury(float Pascal) {
+	double Adapter::Pascal2MmOfMercury(float Pascal) {
 		return (760 * Pascal) / 101325;
 	}
 
 	/*
 		Calculates the altitude in meters (m) using the US Standard Atmosphere 1976 (NASA) formula
 	*/
-	float Adapter::Pascal2Altitude(float Pascal) {
+	double Adapter::Pascal2Altitude(float Pascal) {
 		// Calculate using US Standard Atmosphere 1976 (NASA)
 		return (44330.77 * (1 - std::pow((Pascal / 101326), 0.1902632)) /*+ OFF_H*/); // OFF_H (disabled) is the user offset
 	}

@@ -1,42 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
-<Package
-  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
-  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10"
-  IgnorableNamespaces="uap mp iot">
-
-  <Identity
-    Name="SensorHubHeadlessAdapterApp"
-    Publisher="CN=default"
-    Version="1.0.0.0" />
-
-  <mp:PhoneIdentity PhoneProductId="5e56987e-7757-4786-b24a-51039cffb304" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
-
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10" IgnorableNamespaces="uap mp iot">
+  <Identity Name="SensorHubHeadlessAdapterApp" Publisher="CN=default" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="5e56987e-7757-4786-b24a-51039cffb304" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>SensorHubHeadlessAdapterApp</DisplayName>
     <PublisherDisplayName>default</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
-
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.10158.0" MaxVersionTested="10.0.10158.0" />
   </Dependencies>
-
   <Resources>
-    <Resource Language="x-generate"/>
+    <Resource Language="x-generate" />
   </Resources>
-
   <Applications>
     <Application Id="SensorHubHeadlessAdapterApp">
-      <uap:VisualElements
-        DisplayName="SensorHubHeadlessAdapterApp"
-        Square150x150Logo="Assets\Logo.png"
-        Square44x44Logo="Assets\SmallLogo.png"
-        Description="SensorHubHeadlessAdapterApp"
-        BackgroundColor="#464646"
-        AppListEntry="none">
+      <uap:VisualElements DisplayName="SensorHubHeadlessAdapterApp" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" Description="SensorHubHeadlessAdapterApp" BackgroundColor="#464646" AppListEntry="none">
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
@@ -48,8 +27,10 @@
       </Extensions>
     </Application>
   </Applications>
-
   <Capabilities>
     <Capability Name="allJoyn" />
+    <Capability Name="internetClient" />
+    <Capability Name="internetClientServer" />
+    <Capability Name="privateNetworkClientServer" />
   </Capabilities>
 </Package>

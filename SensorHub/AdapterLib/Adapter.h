@@ -184,10 +184,10 @@ namespace AdapterLib
 		uint32  rawTemperature();
 		uint32  rawHumidity();
 		uint32  rawPressure();
-		float	Celcius2Fahrenheits(float Celcius);
-		float	Pascal2InchesOfMercury(float Pascal);
-		float	Pascal2MmOfMercury(float Pascal);
-		float	Pascal2Altitude(float Pascal);
+		double	Celcius2Fahrenheits(float Celcius);
+		double	Pascal2InchesOfMercury(float Pascal);
+		double	Pascal2MmOfMercury(float Pascal);
+		double	Pascal2Altitude(float Pascal);
 		bool	ValidHtdu21dCyclicRedundancyCheck(uint32 data_, byte crc_);
 		Platform::String^ FormatInterfaceHint(Platform::String^ propertyName);
 
