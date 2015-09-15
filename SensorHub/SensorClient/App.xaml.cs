@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.System.Threading;
+using Windows.ApplicationModel.Core;
 
 using BridgeRT;
 using AdapterLib;
@@ -27,6 +28,8 @@ namespace SensorClient
     sealed partial class App : Application
     {
         private BridgeRT.DsbBridge dsbBrifge = null;
+        public delegate void DsbBridgeInitializationCompleated(IAsyncAction asyncAction, AsyncStatus asyncStatus);
+        public DsbBridgeInitializationCompleated OnBridgeInitialized;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -75,7 +78,7 @@ namespace SensorClient
                 // Place the frame in the current Window
                 Window.Current.Content = rootFrame;
 
-                ThreadPool.RunAsync(new WorkItemHandler((source) =>
+                var op = ThreadPool.RunAsync(new WorkItemHandler((source) =>
                 {
                     var adapter = new Adapter();
 
@@ -84,7 +87,18 @@ namespace SensorClient
                     if (dsbBrifge != null)
                         dsbBrifge.Initialize();
                 }));
+
+                op.Completed = delegate (IAsyncAction asyncAction, AsyncStatus asyncStatus)
+                {
+                    var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
+                    var opp = dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, delegate
+                    {
+                        if (OnBridgeInitialized != null)
+                            OnBridgeInitialized.Invoke(asyncAction, asyncStatus);                        
+                    });
+                };
                 
+
 
             }
 

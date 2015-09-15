@@ -111,6 +111,7 @@
     <Compile Include="DataModel\ConnectTheDotsSensor.cs" />
     <Compile Include="DataModel\HumiditySensor.cs" />
     <Compile Include="DataModel\PressureSensor.cs" />
+    <Compile Include="DataModel\SensorBindingConverter.cs" />
     <Compile Include="DataModel\TemperatureSensor.cs" />
     <Compile Include="DataModel\WeatherShieldViewModel.cs" />
     <Compile Include="DataModel\WeatherStationConsumer.cs" />
@@ -125,6 +126,7 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\toolbox.png" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -142,6 +144,11 @@
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +173,7 @@
       <Name>com.mtcmoscow.SensorHub.Temperature</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
