@@ -35,10 +35,17 @@ namespace SensorClient
         {
             this.InitializeComponent();
             this.DataContext = ShieldViewModel;
+            ((SensorClient.App)Application.Current).OnBridgeInitialized += OnBridgeInitialized;
         }
 
         private void Status_TextChanged(object sender, TextChangedEventArgs e)
         {
+        }
+
+
+        private void OnBridgeInitialized(IAsyncAction asyncAction, AsyncStatus asyncStatus)
+        {
+            //TODO: Add status information
         }
     }
 }
