@@ -135,9 +135,9 @@ namespace AdapterLib
 		/// <returns>
 		/// The temperature in Celcius (C)
 		/// </returns>
-		property float TemperatureCelcius
+		property double TemperatureCelcius
 		{
-			float get() {
+			double get() {
 				uint32 raw_temperature_data = rawTemperature();
 				double temperature_C = (((175.72 * raw_temperature_data) / 65536) - 46.85);
 				
@@ -152,9 +152,9 @@ namespace AdapterLib
 		/// <returns>
 		/// The relative humidity
 		/// </returns>
-		property float Humidity
+		property double Humidity
 		{
-			float get()
+			double get()
 			{
 				uint32 raw_humidity_data = rawHumidity();
 				return (((125.0 * raw_humidity_data) / 65536) - 6.0);
@@ -168,9 +168,9 @@ namespace AdapterLib
 		/// <returns>
 		/// The pressure in Pascals (Pa)
 		/// </returns>
-		property float Pressure
+		property double Pressure
 		{
-			float get()
+			double get()
 		{
 			uint32 raw_pressure_data = rawPressure();
 			double pressure_Pa = ((raw_pressure_data >> 6) + (((raw_pressure_data >> 4) & 0x03) / 4.0));

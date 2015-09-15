@@ -482,6 +482,21 @@ Leave:
     return;
 }
 
+void BridgeRT::DsbBridge::LogInfo(Platform::String ^ LogMsg)
+{
+	BridgeLog::Instance()->LogInfo(LogMsg);
+}
+
+void BridgeRT::DsbBridge::LogError(Platform::String ^ LogMsg, Platform::Exception ^ ex)
+{
+	BridgeLog::Instance()->LogError(LogMsg, ex);
+}
+
+void BridgeRT::DsbBridge::LogError(Platform::String ^ LogMsg, int hr)
+{
+	BridgeLog::Instance()->LogError(LogMsg, hr);
+}
+
 int32
 DsbBridge::registerAdapterSignalHandlers(bool IsRegister)
 {

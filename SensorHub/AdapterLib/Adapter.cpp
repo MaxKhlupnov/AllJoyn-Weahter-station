@@ -118,87 +118,102 @@ namespace AdapterLib
             this->version = L"0.0.0.0";
         }
 		
-
-		controller = GpioController::GetDefault();
-		/*
-		* Initialize the blue LED and set to "off"
-		*
-		* Instantiate the blue LED pin object
-		* Write the GPIO pin value of low on the pin
-		* Set the GPIO pin drive mode to output
-		*/
-		BlueLEDPin = controller->OpenPin(STATUS_LED_BLUE_PIN, GpioSharingMode::Exclusive);
-		BlueLEDPin->Write(GpioPinValue::Low);
-		BlueLEDPin->SetDriveMode(GpioPinDriveMode::Output);
-
-		/*
-		* Initialize the green LED and set to "off"
-		*
-		* Instantiate the green LED pin object
-		* Write the GPIO pin value of low on the pin
-		* Set the GPIO pin drive mode to output
-		*/
-		GreenLEDPin = controller->OpenPin(STATUS_LED_GREEN_PIN, GpioSharingMode::Exclusive);
-		GreenLEDPin->Write(GpioPinValue::Low);
-		GreenLEDPin->SetDriveMode(GpioPinDriveMode::Output);
-
-		/*
-		* Acquire the I2C device
-		* MSDN I2C Reference: https://msdn.microsoft.com/en-us/library/windows/apps/windows.devices.i2c.aspx
-		*
-		* Use the I2cDevice device selector to create an advanced query syntax string
-		* Use the Windows.Devices.Enumeration.DeviceInformation class to create a collection using the advanced query syntax string
-		* Take the device id of the first device in the collection
-		*/
-		Platform::String^ advanced_query_syntax = I2cDevice::GetDeviceSelector("I2C1");
+		DsbBridge::LogInfo(L"Starting " + this->exposedApplicationName + " version " + this->version);
 		
-		IAsyncOperation<DeviceInformationCollection^>^  device_information_collection = DeviceInformation::FindAllAsync(advanced_query_syntax);
-		auto deviceEnumTask = create_task(device_information_collection);
-		
-		deviceEnumTask.then([this](DeviceInformationCollection^ devices)
-		{
-			DeviceInformation^ di = devices->GetAt(0);
-			Platform::String^ deviceId = di->Id;
-		
+		DsbBridge::LogInfo(L"Initializing GPIO controller");
+		try {
+			controller = GpioController::GetDefault();
 			/*
-			* Establish an I2C connection to the HTDU21D
+			* Initialize the blue LED and set to "off"
 			*
-			* Instantiate the I2cConnectionSettings using the device address of the HTDU21D
-			* - Set the I2C bus speed of connection to fast mode
-			* - Set the I2C sharing mode of the connection to shared
-			*
-			* Instantiate the the HTDU21D I2C device using the device id and the I2cConnectionSettings
+			* Instantiate the blue LED pin object
+			* Write the GPIO pin value of low on the pin
+			* Set the GPIO pin drive mode to output
 			*/
-			I2cConnectionSettings^ htdu21d_connection = ref new I2cConnectionSettings(HTDU21D_I2C_ADDRESS);
-			htdu21d_connection->BusSpeed = I2cBusSpeed::FastMode;
-			htdu21d_connection->SharingMode = I2cSharingMode::Shared;
-
-			//htdu21d = await I2cDevice.FromIdAsync(deviceId, htdu21d_connection);
-			IAsyncOperation<I2cDevice^>^  htdu21d_information_collection = I2cDevice::FromIdAsync(deviceId, htdu21d_connection);
-			auto htdu21dEnumTask = create_task(htdu21d_information_collection);
-			htdu21dEnumTask.then([this](I2cDevice^ htdu21dDevice) {
-				htdu21d = htdu21dDevice;
-			});
+			DsbBridge::LogInfo(L"Opening GPIO pin# " + STATUS_LED_BLUE_PIN.ToString());
+			BlueLEDPin = controller->OpenPin(STATUS_LED_BLUE_PIN, GpioSharingMode::Exclusive);
+			BlueLEDPin->Write(GpioPinValue::Low);
+			BlueLEDPin->SetDriveMode(GpioPinDriveMode::Output);
 
 			/*
-			* Establish an I2C connection to the MPL3115A2
+			* Initialize the green LED and set to "off"
 			*
-			* Instantiate the I2cConnectionSettings using the device address of the MPL3115A2
-			* - Set the I2C bus speed of connection to fast mode
-			* - Set the I2C sharing mode of the connection to shared
-			*
-			* Instantiate the the MPL3115A2 I2C device using the device id and the I2cConnectionSettings
+			* Instantiate the green LED pin object
+			* Write the GPIO pin value of low on the pin
+			* Set the GPIO pin drive mode to output
 			*/
-			I2cConnectionSettings^ mpl3115a2_connection = ref new I2cConnectionSettings(MPL3115A2_I2C_ADDRESS);
-			mpl3115a2_connection->BusSpeed = I2cBusSpeed::FastMode;
-			mpl3115a2_connection->SharingMode = I2cSharingMode::Shared;
-			IAsyncOperation<I2cDevice^>^  mpl3115a2_information_collection = I2cDevice::FromIdAsync(deviceId, mpl3115a2_connection);
-			auto mpl3115a2EnumTask = create_task(mpl3115a2_information_collection);
-			mpl3115a2EnumTask.then([this](I2cDevice^ mpl3115a2Device) {
-				mpl3115a2 = mpl3115a2Device;
-			});
+			DsbBridge::LogInfo(L"Opening GPIO pin# " + STATUS_LED_GREEN_PIN.ToString());
+			GreenLEDPin = controller->OpenPin(STATUS_LED_GREEN_PIN, GpioSharingMode::Exclusive);
+			GreenLEDPin->Write(GpioPinValue::Low);
+			GreenLEDPin->SetDriveMode(GpioPinDriveMode::Output);
 
-		});
+			/*
+			* Acquire the I2C device
+			* MSDN I2C Reference: https://msdn.microsoft.com/en-us/library/windows/apps/windows.devices.i2c.aspx
+			*
+			* Use the I2cDevice device selector to create an advanced query syntax string
+			* Use the Windows.Devices.Enumeration.DeviceInformation class to create a collection using the advanced query syntax string
+			* Take the device id of the first device in the collection
+			*/
+			DsbBridge::LogInfo(L"Querying for I2C1 interface");
+			Platform::String^ advanced_query_syntax = I2cDevice::GetDeviceSelector("I2C1");
+
+			IAsyncOperation<DeviceInformationCollection^>^  device_information_collection = DeviceInformation::FindAllAsync(advanced_query_syntax);
+			auto deviceEnumTask = create_task(device_information_collection);
+
+			deviceEnumTask.then([this](DeviceInformationCollection^ devices)
+			{
+				DeviceInformation^ di = devices->GetAt(0);
+				Platform::String^ deviceId = di->Id;
+
+				/*
+				* Establish an I2C connection to the HTDU21D
+				*
+				* Instantiate the I2cConnectionSettings using the device address of the HTDU21D
+				* - Set the I2C bus speed of connection to fast mode
+				* - Set the I2C sharing mode of the connection to shared
+				*
+				* Instantiate the the HTDU21D I2C device using the device id and the I2cConnectionSettings
+				*/
+				DsbBridge::LogInfo(L"Querying for HTDU21D I2C device. Address: " + HTDU21D_I2C_ADDRESS);
+				I2cConnectionSettings^ htdu21d_connection = ref new I2cConnectionSettings(HTDU21D_I2C_ADDRESS);
+				htdu21d_connection->BusSpeed = I2cBusSpeed::FastMode;
+				htdu21d_connection->SharingMode = I2cSharingMode::Shared;
+
+				//htdu21d = await I2cDevice.FromIdAsync(deviceId, htdu21d_connection);
+				IAsyncOperation<I2cDevice^>^  htdu21d_information_collection = I2cDevice::FromIdAsync(deviceId, htdu21d_connection);
+				auto htdu21dEnumTask = create_task(htdu21d_information_collection);
+				htdu21dEnumTask.then([this](I2cDevice^ htdu21dDevice) {
+					DsbBridge::LogInfo(L"Found HTDU21D I2C device. DeviceId: " + htdu21dDevice->DeviceId);
+					htdu21d = htdu21dDevice;
+				});
+
+				/*
+				* Establish an I2C connection to the MPL3115A2
+				*
+				* Instantiate the I2cConnectionSettings using the device address of the MPL3115A2
+				* - Set the I2C bus speed of connection to fast mode
+				* - Set the I2C sharing mode of the connection to shared
+				*
+				* Instantiate the the MPL3115A2 I2C device using the device id and the I2cConnectionSettings
+				*/
+				DsbBridge::LogInfo(L"Querying for MPL3115A2 I2C device. Address: " + MPL3115A2_I2C_ADDRESS);
+				I2cConnectionSettings^ mpl3115a2_connection = ref new I2cConnectionSettings(MPL3115A2_I2C_ADDRESS);
+				mpl3115a2_connection->BusSpeed = I2cBusSpeed::FastMode;
+				mpl3115a2_connection->SharingMode = I2cSharingMode::Shared;
+				IAsyncOperation<I2cDevice^>^  mpl3115a2_information_collection = I2cDevice::FromIdAsync(deviceId, mpl3115a2_connection);
+				auto mpl3115a2EnumTask = create_task(mpl3115a2_information_collection);
+				mpl3115a2EnumTask.then([this](I2cDevice^ mpl3115a2Device) {
+					DsbBridge::LogInfo(L"Found MPL3115A2 I2C device. DeviceId: " + mpl3115a2Device->DeviceId);
+					mpl3115a2 = mpl3115a2Device;
+				});
+
+			});
+		}
+		catch(Exception^ ex){
+			DsbBridge::LogError(L"Error initializing GPIO", ex);
+			throw ex;
+		}
 
     }
 
@@ -243,11 +258,11 @@ namespace AdapterLib
 		// Define Temperature C as device property. Device contains properties		
 		AdapterProperty^ temperature_Property = ref new AdapterProperty(temperaturePropertyName, this->FormatInterfaceHint(temperaturePropertyName));
 
-		temperatureCelsiusValueData = static_cast<float64>(this->TemperatureCelcius);
+		temperatureCelsiusValueData = static_cast<double>(this->TemperatureCelcius);
 		AdapterValue^ temperatureCelsiusAttr_Value = ref new AdapterValue(temperatureCelsiusValueName, temperatureCelsiusValueData);		
 		temperature_Property += temperatureCelsiusAttr_Value;
 
-		temperatureFahrenheitsValueData = static_cast<float64>(this->Celcius2Fahrenheits(static_cast<float64>(temperatureCelsiusValueData)));
+		temperatureFahrenheitsValueData = static_cast<double>(this->Celcius2Fahrenheits(static_cast<double>(temperatureCelsiusValueData)));
 		AdapterValue^ temperatureFahrenheitsAttr_Value = ref new AdapterValue(temperatureFahrenheitsValueName, temperatureFahrenheitsValueData);		
 		temperature_Property += temperatureFahrenheitsAttr_Value;
 		
@@ -257,28 +272,28 @@ namespace AdapterLib
 		AdapterProperty^ pressureProperty = ref new AdapterProperty(pressurePropertyName, this->FormatInterfaceHint(pressurePropertyName));
 
 		// Add Pressure value in Pascal
-		pressurePascalValueData = static_cast<float64>(this->Pressure);
+		pressurePascalValueData = static_cast<double>(this->Pressure);
 		AdapterValue^ pressurePascalAttr_Value = ref new AdapterValue(pressurePascalValueName, pressurePascalValueData);
 		pressureProperty += pressurePascalAttr_Value;
 
 		//Value of pressure in millimeters of Mercury (metric)
-		pressureMmOfMercuryValueData = static_cast<float64>(this->Pascal2MmOfMercury(static_cast<float64>(pressurePascalValueData)));
+		pressureMmOfMercuryValueData = static_cast<double>(this->Pascal2MmOfMercury(static_cast<double>(pressurePascalValueData)));
 		AdapterValue^ pressureMmOfMercuryAttr_Value = ref new AdapterValue(pressureMmOfMercuryValueName, pressureMmOfMercuryValueData);
 		pressureProperty += pressureMmOfMercuryAttr_Value;
 
 		//Value of pressure in inches of Mercury (imperial)
-		pressureInchesOfMercuryValueData = static_cast<float64>(this->Pascal2InchesOfMercury(static_cast<float64>(pressurePascalValueData)));
+		pressureInchesOfMercuryValueData = static_cast<double>(this->Pascal2InchesOfMercury(static_cast<double>(pressurePascalValueData)));
 		AdapterValue^ pressureInchesOfMercuryAttr_Value = ref new AdapterValue(pressureInchesOfMercuryValueName, pressureInchesOfMercuryValueData);
 		pressureProperty += pressureInchesOfMercuryAttr_Value;
 
 		//Value of pressure as Altitude
-		pressureAltitudeValueData = static_cast<float64>(this->Pascal2Altitude(static_cast<float64>(pressureAltitudeValueData)));
+		pressureAltitudeValueData = static_cast<double>(this->Pascal2Altitude(static_cast<double>(pressureAltitudeValueData)));
 		AdapterValue^ pressureAltitudeAttr_Value = ref new AdapterValue(pressureAltitudeValueName, pressureAltitudeValueData);
 		pressureProperty += pressureAltitudeAttr_Value;
 
 		// Define Humidity as device property. Device contains properties
 		AdapterProperty^ humidityProperty = ref new AdapterProperty(humidityPropertyName, this->FormatInterfaceHint(humidityPropertyName));
-		humidityRHValueData = static_cast<float64>(this->Humidity);
+		humidityRHValueData = static_cast<double>(this->Humidity);
 		AdapterValue^ humidityRHAttr_Value = ref new AdapterValue(humidityRHValueName, humidityRHValueData);
 		humidityProperty += humidityRHAttr_Value;
 
@@ -377,20 +392,20 @@ namespace AdapterLib
 		AdapterValue^ attribute;//ynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
 		
 		if (Property->Name->Equals(temperaturePropertyName)) {
-			temperatureCelsiusValueData = static_cast<float64>(this->TemperatureCelcius);
+			temperatureCelsiusValueData = static_cast<double>(this->TemperatureCelcius);
 			if (AttributeName->Equals(temperatureCelsiusValueName)) {				
 				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
 				attribute->Data = temperatureCelsiusValueData;
 			}
 			if (AttributeName->Equals(temperatureFahrenheitsValueName)) {
-				temperatureFahrenheitsValueData = static_cast<float64>(this->Celcius2Fahrenheits(static_cast<float64>(temperatureCelsiusValueData)));
+				temperatureFahrenheitsValueData = static_cast<double>(this->Celcius2Fahrenheits(static_cast<double>(temperatureCelsiusValueData)));
 				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
 				attribute->Data = temperatureFahrenheitsValueData;
 			}
 		}
 
 		if (Property->Name->Equals(pressurePropertyName)) {
-			pressurePascalValueData = static_cast<float64>(this->Pressure);
+			pressurePascalValueData = static_cast<double>(this->Pressure);
 			
 			if (AttributeName->Equals(pressurePascalValueName)) {
 				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
@@ -398,20 +413,20 @@ namespace AdapterLib
 			}
 			if (AttributeName->Equals(pressureMmOfMercuryValueName)) {
 				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
-				attribute->Data = static_cast<float64>(this->Pascal2MmOfMercury(static_cast<float64>(pressurePascalValueData)));
+				attribute->Data = static_cast<double>(this->Pascal2MmOfMercury(static_cast<double>(pressurePascalValueData)));
 			}
 			if (AttributeName->Equals(pressureInchesOfMercuryValueName)) {
 				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(2));
-				attribute->Data = static_cast<float64>(this->Pascal2InchesOfMercury(static_cast<float64>(pressurePascalValueData)));
+				attribute->Data = static_cast<double>(this->Pascal2InchesOfMercury(static_cast<double>(pressurePascalValueData)));
 			}			
 			if (AttributeName->Equals(pressureAltitudeValueName)) {
 				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(3));
-				attribute->Data = static_cast<float64>(this->Pascal2Altitude(static_cast<float64>(pressurePascalValueData)));
+				attribute->Data = static_cast<double>(this->Pascal2Altitude(static_cast<double>(pressurePascalValueData)));
 			}
 		}
 
 		if (Property->Name->Equals(humidityPropertyName)) {
-			humidityRHValueData = static_cast<float64>(this->Humidity);
+			humidityRHValueData = static_cast<double>(this->Humidity);
 			attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
 			attribute->Data = humidityRHValueData;
 		}
@@ -501,53 +516,58 @@ namespace AdapterLib
     }
 	uint32 Adapter::rawTemperature()
 	{
+		try {			
+			uint32 temperature = 0;
+			int byteLen = 3;
+			Platform::Array<BYTE>^ i2c_temperature_data = ref new Platform::Array<BYTE>(byteLen);
+			//byte[] i2c_temperature_data = new byte[3];
 
-		uint32 temperature = 0;
-		int byteLen = 3;
-		Platform::Array<BYTE>^ i2c_temperature_data = ref new Platform::Array<BYTE>(byteLen);
-		//byte[] i2c_temperature_data = new byte[3];
+			/*
+			* Request temperature data from the HTDU21D
+			* HTDU21D datasheet: http://dlnmh9ip6v2uc.cloudfront.net/datasheets/BreakoutBoards/HTU21D.pdf
+			*
+			* Write the SAMPLE_TEMPERATURE_HOLD command (0xE3) to the HTDU21D
+			* - HOLD means it will block the I2C line while the HTDU21D calculates the temperature value
+			*
+			* Read the three bytes returned by the HTDU21D
+			* - byte 0 - MSB of the temperature
+			* - byte 1 - LSB of the temperature
+			* - byte 2 - CRC
+			*
+			* NOTE: Holding the line allows for a `WriteRead` style transaction
+			*/
+			htdu21d->WriteRead(ref new Platform::Array<BYTE>{ SAMPLE_TEMPERATURE_HOLD }, i2c_temperature_data);
 
-		/*
-		* Request temperature data from the HTDU21D
-		* HTDU21D datasheet: http://dlnmh9ip6v2uc.cloudfront.net/datasheets/BreakoutBoards/HTU21D.pdf
-		*
-		* Write the SAMPLE_TEMPERATURE_HOLD command (0xE3) to the HTDU21D
-		* - HOLD means it will block the I2C line while the HTDU21D calculates the temperature value
-		*
-		* Read the three bytes returned by the HTDU21D
-		* - byte 0 - MSB of the temperature
-		* - byte 1 - LSB of the temperature
-		* - byte 2 - CRC
-		*
-		* NOTE: Holding the line allows for a `WriteRead` style transaction
-		*/
-		htdu21d->WriteRead(ref new Platform::Array<BYTE>{ SAMPLE_TEMPERATURE_HOLD }, i2c_temperature_data);
+			/*
+			* Reconstruct the result using the first two bytes returned from the device
+			*
+			* NOTE: Zero out the status bits (bits 0 and 1 of the LSB), but keep them in place
+			* - status bit 0 - not assigned
+			* - status bit 1
+			* -- off = temperature data
+			* -- on = humdity data
+			*/
+			temperature = (uint32)(i2c_temperature_data[0] << 8);
+			temperature |= (uint32)(i2c_temperature_data[1] & 0xFC);
 
-		/*
-		* Reconstruct the result using the first two bytes returned from the device
-		*
-		* NOTE: Zero out the status bits (bits 0 and 1 of the LSB), but keep them in place
-		* - status bit 0 - not assigned
-		* - status bit 1
-		* -- off = temperature data
-		* -- on = humdity data
-		*/
-		temperature = (uint32)(i2c_temperature_data[0] << 8);
-		temperature |= (uint32)(i2c_temperature_data[1] & 0xFC);
+			/*
+			* Test the integrity of the data
+			*
+			* Ensure the data returned is temperature data (hint: byte 1, bit 1)
+			* Test cyclic redundancy check (CRC) byte
+			*/
+			bool temperature_data = (0x00 == (0x02 & i2c_temperature_data[1]));
+			if (!temperature_data) { return 0; }
 
-		/*
-		* Test the integrity of the data
-		*
-		* Ensure the data returned is temperature data (hint: byte 1, bit 1)
-		* Test cyclic redundancy check (CRC) byte
-		*/
-		bool temperature_data = (0x00 == (0x02 & i2c_temperature_data[1]));
-		if (!temperature_data) { return 0; }
+			bool valid_data = ValidHtdu21dCyclicRedundancyCheck(temperature, i2c_temperature_data[2]);
+			if (!valid_data) { return 0; }
 
-		bool valid_data = ValidHtdu21dCyclicRedundancyCheck(temperature, i2c_temperature_data[2]);
-		if (!valid_data) { return 0; }
-
-		return temperature;
+			return temperature;
+		}
+		catch (Exception^ ex) {
+			DsbBridge::LogError(L"Error reading temperature sensor HTDU21D via I2C", ex);
+			throw ex;
+		}
 
 	//	return ERROR_SUCCESS;
 	}
@@ -556,7 +576,7 @@ namespace AdapterLib
 		uint32 data_,
 		byte crc_
 		)
-	{
+	{		
 		/*
 		* Validate the 8-bit cyclic redundancy check (CRC) byte
 		* CRC: http://en.wikipedia.org/wiki/Cyclic_redundancy_check
@@ -585,104 +605,116 @@ namespace AdapterLib
 
 	uint32 Adapter::rawHumidity()
 	{
-		uint32 humidity = 0;
-		Platform::Array<BYTE>^ i2c_humidity_data = ref new Platform::Array<BYTE>(3);
+		try {
+			uint32 humidity = 0;
+			Platform::Array<BYTE>^ i2c_humidity_data = ref new Platform::Array<BYTE>(3);
 
-		/*
-		* Request humidity data from the HTDU21D
-		* HTDU21D datasheet: http://dlnmh9ip6v2uc.cloudfront.net/datasheets/BreakoutBoards/HTU21D.pdf
-		*
-		* Write the SAMPLE_HUMIDITY_HOLD command (0xE5) to the HTDU21D
-		* - HOLD means it will block the I2C line while the HTDU21D calculates the humidity value
-		*
-		* Read the three bytes returned by the HTDU21D
-		* - byte 0 - MSB of the humidity
-		* - byte 1 - LSB of the humidity
-		* - byte 2 - CRC
-		*
-		* NOTE: Holding the line allows for a `WriteRead` style transaction
-		*/
-		htdu21d->WriteRead(ref new Platform::Array<BYTE>{ SAMPLE_HUMIDITY_HOLD }, i2c_humidity_data);
+			/*
+			* Request humidity data from the HTDU21D
+			* HTDU21D datasheet: http://dlnmh9ip6v2uc.cloudfront.net/datasheets/BreakoutBoards/HTU21D.pdf
+			*
+			* Write the SAMPLE_HUMIDITY_HOLD command (0xE5) to the HTDU21D
+			* - HOLD means it will block the I2C line while the HTDU21D calculates the humidity value
+			*
+			* Read the three bytes returned by the HTDU21D
+			* - byte 0 - MSB of the humidity
+			* - byte 1 - LSB of the humidity
+			* - byte 2 - CRC
+			*
+			* NOTE: Holding the line allows for a `WriteRead` style transaction
+			*/
+			htdu21d->WriteRead(ref new Platform::Array<BYTE>{ SAMPLE_HUMIDITY_HOLD }, i2c_humidity_data);
 
-		/*
-		* Reconstruct the result using the first two bytes returned from the device
-		*
-		* NOTE: Zero out the status bits (bits 0 and 1 of the LSB), but keep them in place
-		* - status bit 0 - not assigned
-		* - status bit 1
-		* -- off = temperature data
-		* -- on = humdity data
-		*/
-		humidity = (uint32)(i2c_humidity_data[0] << 8);
-		humidity |= (uint32)(i2c_humidity_data[1] & 0xFC);
+			/*
+			* Reconstruct the result using the first two bytes returned from the device
+			*
+			* NOTE: Zero out the status bits (bits 0 and 1 of the LSB), but keep them in place
+			* - status bit 0 - not assigned
+			* - status bit 1
+			* -- off = temperature data
+			* -- on = humdity data
+			*/
+			humidity = (uint32)(i2c_humidity_data[0] << 8);
+			humidity |= (uint32)(i2c_humidity_data[1] & 0xFC);
 
-		/*
-		* Test the integrity of the data
-		*
-		* Ensure the data returned is humidity data (hint: byte 1, bit 1)
-		* Test cyclic redundancy check (CRC) byte
-		*
-		* WARNING: HTDU21D firmware error - XOR CRC byte with 0x62 before attempting to validate
-		*/
-		bool humidity_data = (0x00 != (0x02 & i2c_humidity_data[1]));
-		if (!humidity_data) { return 0; }
+			/*
+			* Test the integrity of the data
+			*
+			* Ensure the data returned is humidity data (hint: byte 1, bit 1)
+			* Test cyclic redundancy check (CRC) byte
+			*
+			* WARNING: HTDU21D firmware error - XOR CRC byte with 0x62 before attempting to validate
+			*/
+			bool humidity_data = (0x00 != (0x02 & i2c_humidity_data[1]));
+			if (!humidity_data) { return 0; }
 
-		bool valid_data = ValidHtdu21dCyclicRedundancyCheck(humidity, (byte)(i2c_humidity_data[2] ^ 0x62));
-		if (!valid_data) { return 0; }
+			bool valid_data = ValidHtdu21dCyclicRedundancyCheck(humidity, (byte)(i2c_humidity_data[2] ^ 0x62));
+			if (!valid_data) { return 0; }
 
-		return humidity;
+			return humidity;
+		}
+		catch (Exception^ ex) {
+			DsbBridge::LogError("Error reading Humidity sensor HTDU21D via I2C", ex);
+			throw ex;
+		}
 	}
 	uint32 Adapter::rawPressure()
 	{
-		uint32 pressure = 0;
-		Platform::Array<BYTE>^ reg_data = ref new Platform::Array<BYTE>(1);
-		Platform::Array<BYTE>^ raw_pressure_data = ref new Platform::Array<BYTE>(3);
+		try {
+			uint32 pressure = 0;
+			Platform::Array<BYTE>^ reg_data = ref new Platform::Array<BYTE>(1);
+			Platform::Array<BYTE>^ raw_pressure_data = ref new Platform::Array<BYTE>(3);
 
-		// Toggle one shot
+			// Toggle one shot
 
-		/*
-		* Request pressure data from the MPL3115A2
-		* MPL3115A2 datasheet: http://dlnmh9ip6v2uc.cloudfront.net/datasheets/Sensors/Pressure/MPL3115A2.pdf
-		*
-		* Update Control Register 1 Flags
-		* - Read data at CTRL_REG1 (0x26) on the MPL3115A2
-		* - Update the SBYB (bit 0) and OST (bit 1) flags to STANDBY and initiate measurement, respectively.
-		* -- SBYB flag (bit 0)
-		* --- off = Part is in STANDBY mode
-		* --- on = Part is ACTIVE
-		* -- OST flag (bit 1)
-		* --- off = auto-clear
-		* --- on = initiate measurement
-		* - Write the resulting value back to Control Register 1
-		*/
-		mpl3115a2->WriteRead(ref new Platform::Array<BYTE>{ CTRL_REG1 }, reg_data);
-		reg_data[0] &= 0xFE;  // ensure SBYB (bit 0) is set to STANDBY
-		reg_data[0] |= 0x02;  // ensure OST (bit 1) is set to initiate measurement
-		mpl3115a2->Write(ref new Platform::Array<BYTE>{ CTRL_REG1, reg_data[0] });
+			/*
+			* Request pressure data from the MPL3115A2
+			* MPL3115A2 datasheet: http://dlnmh9ip6v2uc.cloudfront.net/datasheets/Sensors/Pressure/MPL3115A2.pdf
+			*
+			* Update Control Register 1 Flags
+			* - Read data at CTRL_REG1 (0x26) on the MPL3115A2
+			* - Update the SBYB (bit 0) and OST (bit 1) flags to STANDBY and initiate measurement, respectively.
+			* -- SBYB flag (bit 0)
+			* --- off = Part is in STANDBY mode
+			* --- on = Part is ACTIVE
+			* -- OST flag (bit 1)
+			* --- off = auto-clear
+			* --- on = initiate measurement
+			* - Write the resulting value back to Control Register 1
+			*/
+			mpl3115a2->WriteRead(ref new Platform::Array<BYTE>{ CTRL_REG1 }, reg_data);
+			reg_data[0] &= 0xFE;  // ensure SBYB (bit 0) is set to STANDBY
+			reg_data[0] |= 0x02;  // ensure OST (bit 1) is set to initiate measurement
+			mpl3115a2->Write(ref new Platform::Array<BYTE>{ CTRL_REG1, reg_data[0] });
 
-		/*
-		* Wait 10ms to allow MPL3115A2 to process the pressure value
-		*/
-		// Task->Delay(10);
-		
+			/*
+			* Wait 10ms to allow MPL3115A2 to process the pressure value
+			*/
+			// Task->Delay(10);
 
-		/*
-		* Write the address of the register of the most significant byte for the pressure value, OUT_P_MSB (0x01)
-		* Read the three bytes returned by the MPL3115A2
-		* - byte 0 - MSB of the pressure
-		* - byte 1 - CSB of the pressure
-		* - byte 2 - LSB of the pressure
-		*/
-		mpl3115a2->WriteRead(ref new Platform::Array<BYTE>{ OUT_P_MSB }, raw_pressure_data);
 
-		/*
-		* Reconstruct the result using all three bytes returned from the device
-		*/
-		pressure = (uint32)(raw_pressure_data[0] << 16);
-		pressure |= (uint32)(raw_pressure_data[1] << 8);
-		pressure |= raw_pressure_data[2];
+			/*
+			* Write the address of the register of the most significant byte for the pressure value, OUT_P_MSB (0x01)
+			* Read the three bytes returned by the MPL3115A2
+			* - byte 0 - MSB of the pressure
+			* - byte 1 - CSB of the pressure
+			* - byte 2 - LSB of the pressure
+			*/
+			mpl3115a2->WriteRead(ref new Platform::Array<BYTE>{ OUT_P_MSB }, raw_pressure_data);
 
-		return pressure;
+			/*
+			* Reconstruct the result using all three bytes returned from the device
+			*/
+			pressure = (uint32)(raw_pressure_data[0] << 16);
+			pressure |= (uint32)(raw_pressure_data[1] << 8);
+			pressure |= raw_pressure_data[2];
+
+			return pressure;
+		}
+		catch (Exception^ ex) {
+			DsbBridge::LogError(L"Error reading Pressure sensor MPL3115A2 via I2C", ex);
+			throw ex;
+		}
 
 	}
 

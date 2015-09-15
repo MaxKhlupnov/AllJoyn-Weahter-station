@@ -49,6 +49,9 @@ namespace BridgeRT
             _In_ IAdapterSignal^ Signal,
             _In_opt_ Platform::Object^ Context
             );
+		static void LogInfo(_In_ Platform::String^ LogMsg);
+		static void LogError(_In_ Platform::String^ LogMsg, _In_ Platform::Exception^ ex);
+		static void LogError(_In_ Platform::String^ LogMsg, int hr);
 
     internal:
         inline IAdapter^ GetAdapter()

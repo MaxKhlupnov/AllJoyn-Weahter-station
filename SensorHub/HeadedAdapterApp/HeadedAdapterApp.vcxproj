@@ -16,7 +16,7 @@
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
-	<UapDefaultAssetScale>100</UapDefaultAssetScale>
+    <UapDefaultAssetScale>100</UapDefaultAssetScale>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
@@ -104,7 +104,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <PackageCertificateKeyFile>HeadedAdapterApp_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>4DB226645D6199D8DACF6F6B8A9DD12D415376B7</PackageCertificateThumbprint>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
@@ -206,7 +206,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Logo.scale-100.png" />
-    <Image Include="Assets\SmallLogo.scale-100.png" />
+    <Image Include="Assets\SmallLogo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
     <Image Include="Assets\StoreLogo.scale-100.png" />
     <Image Include="Assets\SplashScreen.scale-100.png" />
     <Image Include="Assets\WideLogo.scale-100.png" />
@@ -231,14 +233,14 @@
     <None Include="HeadedAdapterApp_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BridgeRT\BridgeRT.vcxproj">
-      <Project>{2783a617-8e1d-40d1-9684-dfaeb8dd5406}</Project>
+    <ProjectReference Include="..\com.mtcmoscow.SensorHub.Humidity\com.mtcmoscow.SensorHub.Humidity.vcxproj">
+      <Project>{bcb7c5b2-d2a5-4996-a540-dc3583c6581e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Common\Common.vcxproj"> 
-      <Project>{4d445253-3bba-455d-b324-ece00d4fe480}</Project>
+    <ProjectReference Include="..\com.mtcmoscow.SensorHub.Pressure\com.mtcmoscow.SensorHub.Pressure.vcxproj">
+      <Project>{8eb040ce-4cc9-4f7f-ab52-1ae010549fef}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\AdapterLib\AdapterLib.vcxproj">
-      <Project>{8d539c08-ea54-475f-b691-7bd8b8b67956}</Project>
+    <ProjectReference Include="..\com.mtcmoscow.SensorHub.Temperature\com.mtcmoscow.SensorHub.Temperature.vcxproj">
+      <Project>{47c0f097-062d-499e-880f-968bff41e5ae}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

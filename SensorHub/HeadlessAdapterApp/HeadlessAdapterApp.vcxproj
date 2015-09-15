@@ -41,11 +41,10 @@
     <AppxPackage>true</AppxPackage>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
-    <PackageCertificateKeyFile>HeadlessAdapterApp_TemporaryKey.pfx</PackageCertificateKeyFile>
     <ContainsStartupTask>true</ContainsStartupTask>
     <ProjectName>HeadlessAdapterApp</ProjectName>
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
-	<UapDefaultAssetScale>100</UapDefaultAssetScale>
+    <UapDefaultAssetScale>100</UapDefaultAssetScale>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -104,7 +103,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup>
+    <PackageCertificateThumbprint>4DB226645D6199D8DACF6F6B8A9DD12D415376B7</PackageCertificateThumbprint>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundle>Never</AppxBundle>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
