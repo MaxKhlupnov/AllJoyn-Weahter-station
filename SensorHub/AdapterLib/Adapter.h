@@ -173,21 +173,19 @@ namespace AdapterLib
 			double get()
 		{
 			uint32 raw_pressure_data = rawPressure();
-			double pressure_Pa = ((raw_pressure_data >> 6) + (((raw_pressure_data >> 4) & 0x03) / 4.0));
-
-			return pressure_Pa;//Convert.ToSingle(pressure_Pa);
+			return ((raw_pressure_data >> 6) + (((raw_pressure_data >> 4) & 0x03) / 4.0));			
 		}
 		}
 
     private:
-        uint32 createSignals();
+        uint32  createSignals();
 		uint32  rawTemperature();
 		uint32  rawHumidity();
 		uint32  rawPressure();
-		double	Celcius2Fahrenheits(float Celcius);
-		double	Pascal2InchesOfMercury(float Pascal);
-		double	Pascal2MmOfMercury(float Pascal);
-		double	Pascal2Altitude(float Pascal);
+		double	Celcius2Fahrenheits(double Celcius);
+		double	Pascal2InchesOfMercury(double Pascal);
+		double	Pascal2MmOfMercury(double Pascal);
+		double	Pascal2Altitude(double Pascal);
 		bool	ValidHtdu21dCyclicRedundancyCheck(uint32 data_, byte crc_);
 		Platform::String^ FormatInterfaceHint(Platform::String^ propertyName);
 
@@ -202,7 +200,7 @@ namespace AdapterLib
 
         // name and GUID of the DSB/Adapter application that will be published on AllJoyn
         Platform::String^ exposedApplicationName;
-        Platform::Guid exposedApplicationGuid;
+        Platform::Guid exposedApplicationGuid;		
 
         // Devices
         std::vector<BridgeRT::IAdapterDevice^> devices;
@@ -212,6 +210,7 @@ namespace AdapterLib
 
         // Sync object
         DsbCommon::CSLock lock;
+		DsbCommon::CSLock m_gpioLock;
 
         //
         // Signal listener entry

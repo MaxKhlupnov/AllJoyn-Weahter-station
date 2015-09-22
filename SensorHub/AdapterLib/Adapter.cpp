@@ -17,7 +17,6 @@
 #include "AdapterDevice.h"
 #include <ppltasks.h>
 
-
 using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::Foundation::Collections;
@@ -30,6 +29,7 @@ using namespace Windows::Devices::Gpio;
 using namespace Windows::Devices::I2c;
 using namespace Windows::Devices::Enumeration;
 using namespace Windows::Foundation;
+
 
 // GPIO Device
 String^ deviceName = "WeatherStation";
@@ -380,58 +380,57 @@ namespace AdapterLib
         IAdapterIoRequest^* RequestPtr
         )
     {
-        //UNREFERENCED_PARAMETER(Property);
-        
-        // UNREFERENCED_PARAMETER(ValuePtr);
+        UNREFERENCED_PARAMETER(Property);        
+        UNREFERENCED_PARAMETER(ValuePtr);
         UNREFERENCED_PARAMETER(RequestPtr);
 		UNREFERENCED_PARAMETER(AttributeName);
 
-		
+			AutoLock sync(&m_gpioLock, true);
 
-		AdapterProperty^ adapterProperty = dynamic_cast<AdapterProperty^>(Property);
-		AdapterValue^ attribute;//ynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
-		
-		if (Property->Name->Equals(temperaturePropertyName)) {
-			temperatureCelsiusValueData = static_cast<double>(this->TemperatureCelcius);
-			if (AttributeName->Equals(temperatureCelsiusValueName)) {				
+			AdapterProperty^ adapterProperty = dynamic_cast<AdapterProperty^>(Property);
+			AdapterValue^ attribute;//ynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+
+			if (Property->Name->Equals(temperaturePropertyName)) {
+				temperatureCelsiusValueData = static_cast<double>(this->TemperatureCelcius);
+				if (AttributeName->Equals(temperatureCelsiusValueName)) {
+					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+					attribute->Data = temperatureCelsiusValueData;
+				}
+				if (AttributeName->Equals(temperatureFahrenheitsValueName)) {
+					temperatureFahrenheitsValueData = static_cast<double>(this->Celcius2Fahrenheits(static_cast<double>(temperatureCelsiusValueData)));
+					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
+					attribute->Data = temperatureFahrenheitsValueData;
+				}
+			}
+
+			if (Property->Name->Equals(pressurePropertyName)) {
+				pressurePascalValueData = static_cast<double>(this->Pressure);
+
+				if (AttributeName->Equals(pressurePascalValueName)) {
+					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+					attribute->Data = static_cast<double>(this->Pressure);
+				}
+				if (AttributeName->Equals(pressureMmOfMercuryValueName)) {
+					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
+					attribute->Data = static_cast<double>(this->Pascal2MmOfMercury(static_cast<double>(pressurePascalValueData)));
+				}
+				if (AttributeName->Equals(pressureInchesOfMercuryValueName)) {
+					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(2));
+					attribute->Data = static_cast<double>(this->Pascal2InchesOfMercury(static_cast<double>(pressurePascalValueData)));
+				}
+				if (AttributeName->Equals(pressureAltitudeValueName)) {
+					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(3));
+					attribute->Data = static_cast<double>(this->Pascal2Altitude(static_cast<double>(pressurePascalValueData)));
+				}
+			}
+
+			if (Property->Name->Equals(humidityPropertyName)) {
+				humidityRHValueData = static_cast<double>(this->Humidity);
 				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
-				attribute->Data = temperatureCelsiusValueData;
+				attribute->Data = humidityRHValueData;
 			}
-			if (AttributeName->Equals(temperatureFahrenheitsValueName)) {
-				temperatureFahrenheitsValueData = static_cast<double>(this->Celcius2Fahrenheits(static_cast<double>(temperatureCelsiusValueData)));
-				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
-				attribute->Data = temperatureFahrenheitsValueData;
-			}
-		}
 
-		if (Property->Name->Equals(pressurePropertyName)) {
-			pressurePascalValueData = static_cast<double>(this->Pressure);
-			
-			if (AttributeName->Equals(pressurePascalValueName)) {
-				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
-				attribute->Data = pressurePascalValueData;
-			}
-			if (AttributeName->Equals(pressureMmOfMercuryValueName)) {
-				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
-				attribute->Data = static_cast<double>(this->Pascal2MmOfMercury(static_cast<double>(pressurePascalValueData)));
-			}
-			if (AttributeName->Equals(pressureInchesOfMercuryValueName)) {
-				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(2));
-				attribute->Data = static_cast<double>(this->Pascal2InchesOfMercury(static_cast<double>(pressurePascalValueData)));
-			}			
-			if (AttributeName->Equals(pressureAltitudeValueName)) {
-				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(3));
-				attribute->Data = static_cast<double>(this->Pascal2Altitude(static_cast<double>(pressurePascalValueData)));
-			}
-		}
-
-		if (Property->Name->Equals(humidityPropertyName)) {
-			humidityRHValueData = static_cast<double>(this->Humidity);
-			attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
-			attribute->Data = humidityRHValueData;
-		}
-
-		*ValuePtr = attribute;
+			*ValuePtr = attribute;		
 
         return ERROR_SUCCESS;
     }
@@ -721,7 +720,7 @@ namespace AdapterLib
 	/*
 		Convert temperature from Celcium to Farenheits
 	*/
-	double Adapter::Celcius2Fahrenheits(float Celcius)
+	double Adapter::Celcius2Fahrenheits(double Celcius)
 	{
 		return  Celcius * 1.8 + 32;
 	}
@@ -730,18 +729,18 @@ namespace AdapterLib
 		Inches of mercury, (inHg and "Hg) is a unit of measurement for pressure.
 		https://en.wikipedia.org/wiki/Inch_of_mercury
 	*/
-	double Adapter::Pascal2InchesOfMercury(float Pascal) {
+	double Adapter::Pascal2InchesOfMercury(double Pascal) {
 		return Pascal / 3376.85;
 	}
 
-	double Adapter::Pascal2MmOfMercury(float Pascal) {
+	double Adapter::Pascal2MmOfMercury(double Pascal) {
 		return (760 * Pascal) / 101325;
 	}
 
 	/*
 		Calculates the altitude in meters (m) using the US Standard Atmosphere 1976 (NASA) formula
 	*/
-	double Adapter::Pascal2Altitude(float Pascal) {
+	double Adapter::Pascal2Altitude(double Pascal) {
 		// Calculate using US Standard Atmosphere 1976 (NASA)
 		return (44330.77 * (1 - std::pow((Pascal / 101326), 0.1902632)) /*+ OFF_H*/); // OFF_H (disabled) is the user offset
 	}
