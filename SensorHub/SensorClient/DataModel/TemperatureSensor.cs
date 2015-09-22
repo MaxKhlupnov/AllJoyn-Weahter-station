@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.Serialization;
 using com.mtcmoscow.SensorHub.Temperature;
 
 namespace SensorClient.DataModel
 {
     public enum TemperatureUnits { Celsius, Fahrenheits };
-    public class TemperatureSensor : ConnectTheDotsSensor
+    public class TemperatureSensor : AbstractSensor
     {
         private TemperatureUnits _units;
         public TemperatureUnits Units
@@ -18,18 +19,16 @@ namespace SensorClient.DataModel
                 return this._units;
             }
             set
-            {
-                unitofmeasure = value.ToString();
+            {               
                 this._units = value;
             }
         }
 
         private TemperatureConsumer consumer;
-        public TemperatureSensor(TemperatureConsumer consumer, string UniqueName)
-        {
-            base.guid = UniqueName;
-            base.measurename = "Temperature";
+        public TemperatureSensor(TemperatureConsumer consumer, string UniqueName) : base(UniqueName)
+        {                       
             this.consumer = consumer;
+            this.Title = "Temperature";
             this.consumer.SessionLost += Consumer_SessionLost;
             this.Units = TemperatureUnits.Celsius;
         }
@@ -40,23 +39,24 @@ namespace SensorClient.DataModel
         }
 
 
-        public async Task<int> ReadDataAsync()
+        protected async override Task<ConnectTheDotsMeasure> ReadDataAsync()
         {
-            base.timecreated = DateTimeOffset.Now.ToLocalTime().ToString();
-
+            ConnectTheDotsMeasure measure = new ConnectTheDotsMeasure(this.UniqueName, this.Title, Units.ToString());
+            measure.timecreated = DateTimeOffset.Now.ToLocalTime().ToString();
+            
             if (this.Units == TemperatureUnits.Celsius)
             {
                 TemperatureGetCelsiusResult cResults =   await this.consumer.GetCelsiusAsync();
-                base.value = cResults.Celsius;
-                return cResults.Status;
+                measure.value = cResults.Celsius;
+                return measure;
             }else if (this.Units == TemperatureUnits.Fahrenheits)
             {
                 TemperatureGetFahrenheitsResult fResult = await this.consumer.GetFahrenheitsAsync();
-                base.value = fResult.Fahrenheits;
-                return fResult.Status;
+                measure.value = fResult.Fahrenheits;
+                return measure;
             }
 
-            return -1;
+            throw new ArgumentException(String.Format("Unknown Units {0} for Temperature", Units));
         }
     }
 }

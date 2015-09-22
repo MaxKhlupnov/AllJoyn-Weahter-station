@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Windows.System.Threading;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using Windows.ApplicationModel.Core;
 
@@ -18,11 +19,18 @@ namespace SensorClient.DataModel
         private HumiditySensor humiditySensor;        
         private TemperatureSensor temperatureSensor;
         private PressureSensor pressureSensor;
+     
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        string mutexId = "WeatherStation";
+        Mutex mutex;
 
-        //  string mutexId = "WeatherStation";
-        //  Mutex mutex
+        private List<AbstractSensor> _sensors;
+        public List<AbstractSensor> Sensors
+        {
+            get { return this._sensors; }
+            set { SetProperty(ref this._sensors, value); }
+        }
+
 
         private double _humidity = 0.0;
         public double Humidity
@@ -33,8 +41,7 @@ namespace SensorClient.DataModel
             }
             set
             {
-                this._humidity = value;
-                RaisePropertyChanged("Humidity");
+                SetProperty(ref this._humidity, value);                
             }
         }
 
@@ -47,8 +54,7 @@ namespace SensorClient.DataModel
             }
             set
             {
-                this._temperature = value;
-                RaisePropertyChanged("Temperature");
+                SetProperty( ref this._temperature, value);                
             }
         }
 
@@ -62,12 +68,20 @@ namespace SensorClient.DataModel
             }
             set
             {
-                this._pressure = value;
-                RaisePropertyChanged("Pressure");
+                SetProperty(ref _pressure, value);
             }
         }
+
+        private ConnectTheDotsHelper connectHelper = null;
+
         public WeatherShieldViewModel()
         {
+
+            this._sensors = new List<AbstractSensor>(0);
+            connectHelper = ConnectTheDotsHelper.makeConnectTheDotsHelper();
+            // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
+            mutex = new Mutex(false, mutexId);
+
             // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
             // mutex = new Mutex(false, mutexId);
 
@@ -81,7 +95,9 @@ namespace SensorClient.DataModel
 
         private void PressureSensorStarted(PressureSensor sensor)
         {
+
             this.pressureSensor = sensor;
+               
         }
 
         private void TemperatureSensorStarted(TemperatureSensor sensor)
@@ -91,7 +107,7 @@ namespace SensorClient.DataModel
 
         private void HumiditySensorStarted(HumiditySensor sensor)
         {
-            this.humiditySensor = sensor;
+            this.humiditySensor = sensor;            
         }
 
         private void StartReadThread()
@@ -100,39 +116,61 @@ namespace SensorClient.DataModel
             // Create a timer-initiated ThreadPool task to read data from AllJoyn
             ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
             {
-
-                int Status = -1; //TODO: Status < 0 means = an Error
-                if (this.humiditySensor != null)
-                    Status = await this.humiditySensor.ReadDataAsync();
-                if (this.temperatureSensor != null)
-                    Status = await this.temperatureSensor.ReadDataAsync();
-                if (this.pressureSensor != null)
-                    Status = await this.pressureSensor.ReadDataAsync();
-
                 // Notify the UI to do an update.
                 var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
-                await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => {
-                    if (this.humiditySensor != null)
-                        this.Humidity = this.humiditySensor.value;
-                    if (this.temperatureSensor != null)
-                        this.Temperature = this.temperatureSensor.value;
-                    if (this.pressureSensor != null)
-                        this.Pressure = this.pressureSensor.value;
+                await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>  {
 
+                    List<AbstractSensor> TheSensors = new List<AbstractSensor>();
+
+                    ConnectTheDotsMeasure measure = null;
+                    if (this.humiditySensor != null)
+                    {
+                        measure = await this.humiditySensor.DoMeasure();
+                        this.Humidity = measure.value;
+                        connectHelper.sendMeasure(measure);
+                        TheSensors.Add(this.humiditySensor);
+                    }
+                    if (this.temperatureSensor != null)
+                    {
+                       measure = await this.temperatureSensor.DoMeasure();
+                       this.Temperature = measure.value;
+                        connectHelper.sendMeasure(measure);
+                        TheSensors.Add(this.temperatureSensor);
+                    }
+                    if (this.pressureSensor != null)
+                    {
+                        measure = await this.pressureSensor.DoMeasure();
+                        this.Pressure = measure.value;
+                        TheSensors.Add(this.pressureSensor);
+                        connectHelper.sendMeasure(measure);
+                    }
+
+                    this.Sensors = TheSensors;
                 });
 
             }, TimeSpan.FromSeconds(2));
-
-
         }
 
-        private void RaisePropertyChanged(string propertyName)
-        {
 
-            PropertyChangedEventHandler handler = this.PropertyChanged;
-            if (handler != null)
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private bool SetProperty<T>(ref T storage, T value, [CallerMemberName] String propertyName = null)
+        {
+            if (object.Equals(storage, value)) return false;
+
+            storage = value;
+            this.OnPropertyChanged(propertyName);
+            return true;
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var eventHandler = this.PropertyChanged;
+            if (eventHandler != null)
             {
-                handler(this, new PropertyChangedEventArgs(propertyName));
+                eventHandler(this, new PropertyChangedEventArgs(propertyName));
             }
         }
     }

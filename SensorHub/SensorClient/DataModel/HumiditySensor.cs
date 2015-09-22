@@ -10,19 +10,18 @@ using Windows.ApplicationModel.Core;
 using System.Threading.Tasks;
 using Windows.Devices.AllJoyn;
 using com.mtcmoscow.SensorHub.Humidity;
+using System.Runtime.Serialization;
 
 namespace SensorClient.DataModel
-{
-    public class HumiditySensor : ConnectTheDotsSensor
+{    
+    public class HumiditySensor : AbstractSensor
     {
         private HumidityConsumer consumer;
-
-        public HumiditySensor(HumidityConsumer consumer, string UniqueName) 
-        {
-            base.guid = UniqueName;
-            base.measurename = "Humidity";
-            base.unitofmeasure = "RH%";
+       
+        public HumiditySensor(HumidityConsumer consumer, string UniqueName) : base(UniqueName)
+        {                   
             this.consumer = consumer;
+            this.Title = "Humidity";
             this.consumer.SessionLost += Consumer_SessionLost;            
         }
 
@@ -32,12 +31,13 @@ namespace SensorClient.DataModel
         }
            
 
-        public async Task<int> ReadDataAsync()
+        protected async override Task<ConnectTheDotsMeasure> ReadDataAsync()
         {
             HumidityGetRHResult RHResult = await this.consumer.GetRHAsync();
-            base.value = RHResult.RH;
-            base.timecreated = DateTimeOffset.Now.ToLocalTime().ToString();            
-            return RHResult.Status;
+            ConnectTheDotsMeasure measure = new ConnectTheDotsMeasure(this.UniqueName, this.Title, "RH%");
+            measure.value = RHResult.RH;
+            measure.timecreated = DateTimeOffset.Now.ToLocalTime().ToString();            
+            return measure;
         }
 
     }

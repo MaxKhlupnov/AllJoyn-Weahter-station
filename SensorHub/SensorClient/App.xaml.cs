@@ -77,28 +77,34 @@ namespace SensorClient
 
                 // Place the frame in the current Window
                 Window.Current.Content = rootFrame;
-
-                var op = ThreadPool.RunAsync(new WorkItemHandler((source) =>
+                if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily.Equals("Windows.IoT",StringComparison.OrdinalIgnoreCase))
                 {
-                    var adapter = new Adapter();
-
-                    dsbBrifge = new DsbBridge(adapter);
-
-                    if (dsbBrifge != null)
-                        dsbBrifge.Initialize();
-                }));
-
-                op.Completed = delegate (IAsyncAction asyncAction, AsyncStatus asyncStatus)
-                {
-                    var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
-                    var opp = dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, delegate
+                    var op = ThreadPool.RunAsync(new WorkItemHandler((source) =>
                     {
-                        if (OnBridgeInitialized != null)
-                            OnBridgeInitialized.Invoke(asyncAction, asyncStatus);                        
-                    });
-                };
-                
+                    // Check if we hav GPIO on board or just run client side
+                    try
+                        {
+                            var adapter = new Adapter();
 
+                            dsbBrifge = new DsbBridge(adapter);
+
+                            if (dsbBrifge != null)
+                                dsbBrifge.Initialize();
+                        }
+                        catch (Exception ex) { }
+
+                    }));
+
+                    op.Completed = delegate (IAsyncAction asyncAction, AsyncStatus asyncStatus)
+                    {
+                        var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
+                        var opp = dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, delegate
+                        {
+                            if (OnBridgeInitialized != null)
+                                OnBridgeInitialized.Invoke(asyncAction, asyncStatus);
+                        });
+                    };
+                }
 
             }
 
