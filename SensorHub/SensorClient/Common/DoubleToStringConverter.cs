@@ -21,7 +21,7 @@ namespace SensorClient.Common
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             if (value is double)
-                return ((double)value).ToString("G4");
+                return ((double)value).ToString("G6");
 
             return string.Empty;
         }

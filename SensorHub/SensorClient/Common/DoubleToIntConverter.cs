@@ -13,11 +13,11 @@ namespace SensorClient.Common
         {
             if(value != null && value is double)
             {
-                int retVal;
-                if (int.TryParse(value.ToString(), out retVal))
-                    return retVal;
+                int  intVal = (int)((double)value);
+
+                return (double)intVal;
             }
-            return null;
+            return 0;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

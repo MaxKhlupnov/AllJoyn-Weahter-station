@@ -15,6 +15,7 @@
             <common:MaxGaugeValueConverter x:Key="maxGaugeValueConverter"/>
             <common:MinGaugeValueConverter x:Key="minGaugeValueConverter"/>
             <common:DoubleToStringConverter x:Key="doubleToStringConverter"/>
+            <common:DoubleToIntConverter x:Key="doubleToIntConverter"/>
 
             <Style x:Key="RichTextBlockCodeStyle" BasedOn="{StaticResource BaseRichTextBlockStyle}" TargetType="RichTextBlock">
                 <Setter Property="FontWeight" Value="SemiLight"/>

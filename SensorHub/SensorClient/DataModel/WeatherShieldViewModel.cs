@@ -47,8 +47,9 @@ namespace SensorClient.DataModel
             StartReadThread();
         }
 
-        private void SensorStarted(AbstractSensor sensor)
+        private async void SensorStarted(AbstractSensor sensor)
         {
+            await sensor.DoMeasure();
             lock (this.Sensors)
             {
                 this.Sensors.Add(sensor);              
@@ -77,7 +78,7 @@ namespace SensorClient.DataModel
                 });
             
 
-            }, TimeSpan.FromSeconds(2));
+            }, TimeSpan.FromSeconds(10));
         }
 
     }
