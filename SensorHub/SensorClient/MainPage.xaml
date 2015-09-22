@@ -31,7 +31,7 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="10,0,0,0">
                     <TextBlock Text="{x:Bind Title}" Style="{StaticResource BaseTextBlockStyle}" TextWrapping="NoWrap"/>
                     <TextBlock Text="{x:Bind Location}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
-                    <TextBlock Text="{x:Bind LastMeasure.value}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
+                    <TextBlock Text="{x:Bind LastMeasure.value, Converter={StaticResource doubleToStringConverter}}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
                 </StackPanel>
             </Grid>
         </DataTemplate>

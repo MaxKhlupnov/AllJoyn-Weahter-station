@@ -119,7 +119,7 @@
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Common\StringToBrushConverter.cs" />
     <Compile Include="Common\ValueToFontFamilyConverter.cs" />
-    <Compile Include="Common\ValueToStringConverter.cs" />
+    <Compile Include="Common\DoubleToStringConverter.cs" />
     <Compile Include="Controls\PageHeader.xaml.cs">
       <DependentUpon>PageHeader.xaml</DependentUpon>
     </Compile>
@@ -130,6 +130,7 @@
     <Compile Include="DataModel\HumiditySensor.cs" />
     <Compile Include="DataModel\PressureSensor.cs" />
     <Compile Include="DataModel\SensorBindingConverter.cs" />
+    <Compile Include="DataModel\SensorsCollection.cs" />
     <Compile Include="DataModel\TemperatureSensor.cs" />
     <Compile Include="DataModel\WeatherShieldViewModel.cs" />
     <Compile Include="DataModel\WeatherStationConsumer.cs" />

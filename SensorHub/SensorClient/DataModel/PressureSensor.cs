@@ -20,8 +20,8 @@ namespace SensorClient.DataModel
                 return this._units;
             }
             set
-            {                
-                this._units = value;
+            {
+                SetProperty(ref this._units, value);
             }
         }
 

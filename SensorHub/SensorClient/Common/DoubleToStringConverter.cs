@@ -16,11 +16,14 @@ using Windows.UI.Xaml.Data;
 
 namespace SensorClient.Common
 {
-    public sealed class ValueToStringConverter : IValueConverter
+    public sealed class DoubleToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return value.ToString();
+            if (value is double)
+                return ((double)value).ToString("G4");
+
+            return string.Empty;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
