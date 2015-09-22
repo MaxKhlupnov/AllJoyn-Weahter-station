@@ -24,8 +24,8 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Border Background="{StaticResource SectionBackground1}" Width="300" Height="200">
-                    <WinRTcontrols:Gauge  Value="{x:Bind LastMeasure.value}" Minimum="{x:Bind MinValueMeasure.value, Converter={StaticResource minGaugeValueConverter}}"  
-                                          Maximum="{x:Bind MaxValueMeasure.value, Converter={StaticResource maxGaugeValueConverter}}" 
+                    <WinRTcontrols:Gauge  Value="{x:Bind LastMeasure.value, Converter={StaticResource doubleToIntConverter}}" Minimum="15"  
+                                          Maximum="110"  
                                           Unit="{x:Bind LastMeasure.unitofmeasure}" Height="200"/>
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="10,0,0,0">
