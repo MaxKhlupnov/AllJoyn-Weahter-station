@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.System.Threading;
 using Windows.ApplicationModel.Core;
+using WinRTXamlToolkit.Debugging;
 
 using BridgeRT;
 using AdapterLib;
@@ -91,7 +92,9 @@ namespace SensorClient
                             if (dsbBrifge != null)
                                 dsbBrifge.Initialize();
                         }
-                        catch (Exception ex) { }
+                        catch (Exception ex) {
+                            DC.Trace(ex.Message);
+                        }
 
                     }));
 

@@ -8,6 +8,7 @@ using Windows.System.Threading;
 using System.ComponentModel;
 using System.Windows;
 using Windows.ApplicationModel.Core;
+using WinRTXamlToolkit.Debugging;
 
 namespace SensorClient.DataModel
 {
@@ -34,7 +35,7 @@ namespace SensorClient.DataModel
             this.Sensors = new SensorsCollection<AbstractSensor>();
             connectHelper = ConnectTheDotsHelper.makeConnectTheDotsHelper();
             // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
-            mutex = new Mutex(false, mutexId);
+            mutex = new Mutex(true, mutexId);
 
             // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
             // mutex = new Mutex(false, mutexId);
@@ -49,11 +50,25 @@ namespace SensorClient.DataModel
 
         private async void SensorStarted(AbstractSensor sensor)
         {
-            await sensor.DoMeasure();
-            lock (this.Sensors)
-            {
-                this.Sensors.Add(sensor);              
-            }
+            
+                bool hasMutex = false;
+                try
+                {
+                    await sensor.DoMeasure();
+                    hasMutex = mutex.WaitOne(1000);
+                    if (hasMutex)
+                    {
+                        this.Sensors.Add(sensor);
+                        DC.Trace("Addedd sensor {0} with id {1}", new object[] { sensor.Title, sensor.UniqueName });
+                    }
+                }
+                finally
+                {
+                    if (hasMutex)
+                    {
+                        mutex.ReleaseMutex();
+                    }
+                }
         }
 
       
@@ -69,11 +84,32 @@ namespace SensorClient.DataModel
                 var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
                 await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
                 {
-                    lock (this.Sensors)
+                    bool hasMutex = false;
+                    try
                     {
+                        hasMutex = mutex.WaitOne(10000);
                         // We have exlusive access to the mutex so can safely read the transfer file
-                        foreach (AbstractSensor sensor in this.Sensors)
-                            sensor.DoMeasure();
+                        if (hasMutex)
+                        {
+                            try {
+                                foreach (AbstractSensor sensor in this.Sensors)
+                                {
+                                    ConnectTheDotsMeasure measure = await sensor.DoMeasure();
+                                    connectHelper.sendMeasure(measure);
+                                }
+                            }catch(Exception ex)
+                            {
+                                Debug.TraceToDebugger = true;
+                                Debug.WriteLine(ex.Message);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        if (hasMutex)
+                        {
+                            mutex.ReleaseMutex();
+                        }
                     }
                 });
             

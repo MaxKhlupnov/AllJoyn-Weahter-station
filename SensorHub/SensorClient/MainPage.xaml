@@ -32,6 +32,7 @@
                     <TextBlock Text="{x:Bind Title}" Style="{StaticResource BaseTextBlockStyle}" TextWrapping="NoWrap"/>
                     <TextBlock Text="{x:Bind Location}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
                     <TextBlock Text="{x:Bind LastMeasure.value, Converter={StaticResource doubleToStringConverter}}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
+                    <TextBlock Text="{x:Bind LastMeasure.unitofmeasure}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
                 </StackPanel>
             </Grid>
         </DataTemplate>
@@ -50,7 +51,7 @@
             </Hub.Header>
 
 
-            <HubSection Padding="20" Background="DarkGray" RequestedTheme="Light" >
+            <HubSection Padding="20" Background="DarkGray" RequestedTheme="Light" Width="450" Height="1000">
                 <HubSection.Header>
                     <TextBlock x:Uid="ByNameHeader" TextLineBounds="TrimToBaseline" OpticalMarginAlignment="TrimSideBearings"/>
                 </HubSection.Header>
@@ -79,6 +80,16 @@
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
                     </GridView>
+                </DataTemplate>
+            </HubSection>
+            <HubSection Padding="20"  RequestedTheme="Light" Width="450" Height="1000">
+                <HubSection.Header>
+                    <TextBlock Text="Trace" TextLineBounds="TrimToBaseline" OpticalMarginAlignment="TrimSideBearings"/>
+                </HubSection.Header>
+                <DataTemplate>
+                    <StackPanel x:Name="pnlDebugTrace">
+                        
+                    </StackPanel>
                 </DataTemplate>
             </HubSection>
         </Hub>

@@ -13,7 +13,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Threading;
-
+using WinRTXamlToolkit.Debugging;
+using WinRTXamlToolkit.Debugging.Views;
+using WinRTXamlToolkit.Controls.Extensions;
+using WinRTXamlToolkit.Controls;
 
 
 using SensorClient.DataModel;
@@ -33,13 +36,43 @@ namespace SensorClient
         
 
         public WeatherShieldViewModel ShieldViewModel {    get; set;}
+        public Popup DebugPopup { get; set; }
+
 
         public MainPage()
         {
             this.InitializeComponent();
                this.DataContext = new WeatherShieldViewModel();
             ((SensorClient.App)Application.Current).OnBridgeInitialized += OnBridgeInitialized;
+            this.Loaded += MainPage_Loaded;
         }
+
+        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            //DC.ShowLog();
+            DC.Show();
+            DebugPopup = Window.Current.Content.GetFirstDescendantOfType<Popup>();
+
+            if (DebugPopup != null)
+            {
+                var debugPopupTitle = ((DebugConsoleView)DebugPopup.Child).Content.GetFirstDescendantOfType<ToolWindow>();
+                if (debugPopupTitle != null)
+                    debugPopupTitle.Title = "Debug messages trace";
+
+                DebugPopup.Opened += DebugPopup_Opened;
+                DebugPopup.Loaded += DebugPopup_Opened;               
+            }
+
+        }
+
+        private void DebugPopup_Opened(object sender, object e)
+        {
+            if (DebugPopup == null)
+                return;
+                DebugPopup.HorizontalOffset = 500;
+        }
+
+        
 
         private void Status_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -48,7 +81,7 @@ namespace SensorClient
 
         private void OnBridgeInitialized(IAsyncAction asyncAction, AsyncStatus asyncStatus)
         {
-            //TODO: Add status information
+            DC.Trace("AllJoyn bridge successfully activated");
         }
 
         /// <summary>

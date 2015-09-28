@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
 using Windows.Web.Http;
 using Windows.System.Threading;
 using System.Threading;
+using WinRTXamlToolkit.Debugging;
 
 namespace SensorClient.DataModel
 {
@@ -37,6 +37,10 @@ namespace SensorClient.DataModel
             helper.localSettings.Organization = "Microsoft Technology Center";
             helper.localSettings.Location = "Moscow";
             helper.InitEventHubConnection();
+
+            string mutexId = "WeatherStation";
+            helper.mutex = new Mutex();
+
             return helper;
         }
 
