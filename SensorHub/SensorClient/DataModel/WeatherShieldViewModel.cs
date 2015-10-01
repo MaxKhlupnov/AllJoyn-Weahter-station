@@ -27,13 +27,13 @@ namespace SensorClient.DataModel
 
 
 
-        private ConnectTheDotsHelper connectHelper = null;
+        private IoTHubHelper connectHelper = null;
 
         public WeatherShieldViewModel()
         {
 
             this.Sensors = new SensorsCollection<AbstractSensor>();
-            connectHelper = ConnectTheDotsHelper.makeConnectTheDotsHelper();
+            connectHelper = IoTHubHelper.initIoTHubHelper();
             // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
             mutex = new Mutex(true, mutexId);
 
@@ -87,7 +87,7 @@ namespace SensorClient.DataModel
                     bool hasMutex = false;
                     try
                     {
-                        hasMutex = mutex.WaitOne(10000);
+                        hasMutex = mutex.WaitOne(100);
                         // We have exlusive access to the mutex so can safely read the transfer file
                         if (hasMutex)
                         {
@@ -98,8 +98,7 @@ namespace SensorClient.DataModel
                                     connectHelper.sendMeasure(measure);
                                 }
                             }catch(Exception ex)
-                            {
-                                Debug.TraceToDebugger = true;
+                            {                               
                                 Debug.WriteLine(ex.Message);
                             }
                         }
@@ -115,6 +114,7 @@ namespace SensorClient.DataModel
             
 
             }, TimeSpan.FromSeconds(10));
+           
         }
 
     }

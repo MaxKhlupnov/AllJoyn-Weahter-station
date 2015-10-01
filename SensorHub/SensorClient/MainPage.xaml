@@ -56,7 +56,8 @@
                     <TextBlock x:Uid="ByNameHeader" TextLineBounds="TrimToBaseline" OpticalMarginAlignment="TrimSideBearings"/>
                 </HubSection.Header>
                 <DataTemplate x:DataType="data:WeatherShieldViewModel">
-                    <GridView 
+                    <ScrollViewer x:Name="sensorsScroll" VerticalScrollMode="Auto" HorizontalScrollMode="Disabled">
+                        <GridView 
                         x:Name="sensorsGridView"
                         Margin="-13,-4,0,0"
                         AutomationProperties.AutomationId="SensorsGridView"
@@ -80,19 +81,34 @@
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
                     </GridView>
+                    </ScrollViewer>
                 </DataTemplate>
             </HubSection>
             <HubSection Padding="20"  RequestedTheme="Light" Width="450" Height="1000">
                 <HubSection.Header>
-                    <TextBlock Text="Trace" TextLineBounds="TrimToBaseline" OpticalMarginAlignment="TrimSideBearings"/>
+                    <TextBlock Text="Settings" TextLineBounds="TrimToBaseline" OpticalMarginAlignment="TrimSideBearings"/>
                 </HubSection.Header>
                 <DataTemplate>
-                    <StackPanel x:Name="pnlDebugTrace">
+
+                    <RelativePanel HorizontalAlignment="Stretch" Margin="20">
+                        <CheckBox x:Name="chkShowTracePanel" Content="Show Debug Trace" Loaded="chkShowTracePanel_Loaded" Checked="chkShowTracePanel_Checked" Unchecked="chkShowTracePanel_Unchecked" />
+                        <TextBlock Text="HostName:" Margin="0 3 10 0" x:Name="lblHostName" RelativePanel.Below="chkShowTracePanel"  />
+                        <TextBox x:Name="txtHostName"  Width="250" RelativePanel.Below="chkShowTracePanel" RelativePanel.RightOf="lblHostName" Text="MtcIoTHub" />
+                        <TextBlock Text="DeviceId:" Margin="0 13 22 0" x:Name="lblDeviceId" RelativePanel.Below="txtHostName" />
+                        <TextBox x:Name="txtDeviceId" Width="250" Margin="0 10 10 0" RelativePanel.Below="txtHostName" RelativePanel.RightOf="lblDeviceId" Text="makhlupi" />
+                        <TextBlock x:Name="lblSharedKey" Margin="0 13 22 0" Text="AccessKey:" RelativePanel.Below="txtDeviceId" />
+                        <TextBox x:Name="txtSharedAccessKey" Width="250" Margin="0 10 10 0" RelativePanel.Below="txtDeviceId" Text="P1X+oqyUXWfAoxfr3M00VhIl4x+C+EuPkE9s//fW43o="  RelativePanel.RightOf="lblDeviceId"/>                        
+                    </RelativePanel>
+
+                   
                         
-                    </StackPanel>
+                        
+                    
+                    
                 </DataTemplate>
             </HubSection>
         </Hub>
+        
 
         <VisualStateManager.VisualStateGroups>
             <!-- Visual states reflect the application's window size -->

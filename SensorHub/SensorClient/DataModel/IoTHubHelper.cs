@@ -15,7 +15,7 @@ namespace SensorClient.DataModel
 
         // App Settings variables
         AppSettings localSettings = new AppSettings();
-
+        private Mutex mutex;
 
         DeviceClient deviceClient = null;
 
@@ -43,6 +43,8 @@ namespace SensorClient.DataModel
             helper.localSettings.Organization = "Microsoft Technology Center";
             helper.localSettings.Location = "Moscow";
             helper.InitIoTHubConnection();
+
+            helper.mutex = new Mutex(false, "SensorHub");
 
             return helper;
         }
@@ -82,13 +84,35 @@ namespace SensorClient.DataModel
         /// <param name="message"></param>
         public async void sendMeasure(ConnectTheDotsMeasure measure)
         {
-            if (this.deviceClient == null)
-                InitIoTHubConnection();
+            bool hasMutex = false;
 
-            measure = ApplySettingsToMeasure(measure);
-            string message = measure.ToJson();
-            var msgBytes = new Message(Encoding.UTF8.GetBytes(message));
-             await this.deviceClient.SendEventAsync(msgBytes);
+            try
+            {
+                hasMutex = mutex.WaitOne(1000);
+                if (hasMutex)
+                {
+                    if (this.deviceClient == null)
+                        InitIoTHubConnection();
+
+                    measure = ApplySettingsToMeasure(measure);
+                    string message = measure.ToJson();
+                    var msgBytes = new Message(Encoding.UTF8.GetBytes(message));
+                    await this.deviceClient.SendEventAsync(msgBytes);
+                    Debug.WriteLine("Sent: {0}", message);
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine("Exception when sending message:" + ex.Message);
+            }
+            finally
+            {
+                if (hasMutex)
+                {
+                    mutex.ReleaseMutex();
+                }
+            }
+            
 
         }
 

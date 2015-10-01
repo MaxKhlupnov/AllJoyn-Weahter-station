@@ -128,6 +128,7 @@
     <Compile Include="DataModel\ConnectTheDotsHelper.cs" />
     <Compile Include="DataModel\ConnectTheDotsMeasure.cs" />
     <Compile Include="DataModel\HumiditySensor.cs" />
+    <Compile Include="DataModel\IoTHubHelper.cs" />
     <Compile Include="DataModel\PressureSensor.cs" />
     <Compile Include="DataModel\SensorBindingConverter.cs" />
     <Compile Include="DataModel\SensorsCollection.cs" />
@@ -193,6 +194,14 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Navigation\" />
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="WindowsIoT, Version=10.0.10240.0">
+      <Name>Windows IoT Extensions for the UWP</Name>
+    </SDKReference>
+    <SDKReference Include="WindowsMobile, Version=10.0.10240.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

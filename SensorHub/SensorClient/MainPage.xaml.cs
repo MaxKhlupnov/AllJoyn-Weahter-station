@@ -48,40 +48,14 @@ namespace SensorClient
         }
 
         private void MainPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            //DC.ShowLog();
-            DC.Show();
-            DebugPopup = Window.Current.Content.GetFirstDescendantOfType<Popup>();
-
-            if (DebugPopup != null)
-            {
-                var debugPopupTitle = ((DebugConsoleView)DebugPopup.Child).Content.GetFirstDescendantOfType<ToolWindow>();
-                if (debugPopupTitle != null)
-                    debugPopupTitle.Title = "Debug messages trace";
-
-                DebugPopup.Opened += DebugPopup_Opened;
-                DebugPopup.Loaded += DebugPopup_Opened;               
-            }
+        {            
+            DC.Hide();
 
         }
-
-        private void DebugPopup_Opened(object sender, object e)
-        {
-            if (DebugPopup == null)
-                return;
-                DebugPopup.HorizontalOffset = 500;
-        }
-
         
-
-        private void Status_TextChanged(object sender, TextChangedEventArgs e)
-        {
-        }
-
-
         private void OnBridgeInitialized(IAsyncAction asyncAction, AsyncStatus asyncStatus)
         {
-            DC.Trace("AllJoyn bridge successfully activated");
+            Debug.WriteLine("AllJoyn bridge successfully activated");
         }
 
         /// <summary>
@@ -109,7 +83,56 @@ namespace SensorClient
             /*var itemId = ((ControlInfoDataItem)e.ClickedItem).UniqueId;
             this.Frame.Navigate(typeof(ItemPage), itemId);*/
         }
-        
+
+        private void chkShowTracePanel_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DC.Hide();
+        }
+
+        private void chkShowTracePanel_Checked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+               
+                if (DebugPopup == null)
+                {
+                    DC.ShowLog();
+                    DebugPopup = Window.Current.Content.GetFirstDescendantOfType<Popup>();
+
+                    if (DebugPopup != null)
+                    {
+                        var debugPopupTitle = ((DebugConsoleView)DebugPopup.Child).Content.GetFirstDescendantOfType<ToolWindow>();
+                        if (debugPopupTitle != null)
+                        {
+                            debugPopupTitle.Title = "Debug messages trace";
+                        }
+
+                        DebugPopup.HorizontalOffset = 500;
+                        DebugPopup.Closed += DebugPopup_Closed;
+                    }
+                }
+                else
+                {
+                    DC.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Can't load debug view: " + ex.Message);
+            }
+        }
+
+        private void DebugPopup_Closed(object sender, object e)
+        {
+            if (chkShowTracePanel != null)
+                chkShowTracePanel.IsChecked = false;
+        }
+
+        CheckBox chkShowTracePanel = null;
+        private void chkShowTracePanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            chkShowTracePanel = sender as CheckBox;
+        }
     }
 
 

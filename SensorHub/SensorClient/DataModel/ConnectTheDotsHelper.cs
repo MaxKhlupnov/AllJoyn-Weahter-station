@@ -38,8 +38,8 @@ namespace SensorClient.DataModel
             helper.localSettings.Location = "Moscow";
             helper.InitEventHubConnection();
 
-            string mutexId = "WeatherStation";
-            helper.mutex = new Mutex();
+            
+            helper.mutex = new Mutex(false, "WeatherStation");
 
             return helper;
         }

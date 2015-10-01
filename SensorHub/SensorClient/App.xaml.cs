@@ -92,8 +92,8 @@ namespace SensorClient
                             if (dsbBrifge != null)
                                 dsbBrifge.Initialize();
                         }
-                        catch (Exception ex) {
-                            DC.Trace(ex.Message);
+                        catch (Exception ex) {                           
+                            Debug.WriteLine("Error loding local sensors: " + ex.Message);
                         }
 
                     }));
@@ -103,7 +103,7 @@ namespace SensorClient
                         var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
                         var opp = dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, delegate
                         {
-                            if (OnBridgeInitialized != null)
+                            if (dsbBrifge != null && OnBridgeInitialized != null)
                                 OnBridgeInitialized.Invoke(asyncAction, asyncStatus);
                         });
                     };
