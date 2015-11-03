@@ -17,6 +17,10 @@
 #include "AdapterDevice.h"
 #include <ppltasks.h>
 
+using namespace Windows::Data::Json;
+using namespace Windows::Web::Http;
+using namespace Windows::Foundation;
+
 using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::Foundation::Collections;
@@ -29,7 +33,8 @@ using namespace Windows::Devices::Gpio;
 using namespace Windows::Devices::I2c;
 using namespace Windows::Devices::Enumeration;
 using namespace Windows::Foundation;
-
+using namespace Windows::System::Profile;
+using namespace Windows::Storage::Streams;
 
 // GPIO Device
 String^ deviceName = "WeatherStation";
@@ -245,15 +250,7 @@ namespace AdapterLib
 
     uint32
     Adapter::Initialize()
-    {
-		// GPIO Device Descriptor: Static data for our device
-		DEVICE_DESCRIPTOR gpioDeviceDesc;
-		gpioDeviceDesc.Name = deviceName;
-		gpioDeviceDesc.VendorName = vendorName;
-		gpioDeviceDesc.Model = modelName;
-		gpioDeviceDesc.Version = version;
-		gpioDeviceDesc.SerialNumer = serialNumber;
-		gpioDeviceDesc.Description = description;
+    {		
 
 		// Define Temperature C as device property. Device contains properties		
 		AdapterProperty^ temperature_Property = ref new AdapterProperty(temperaturePropertyName, this->FormatInterfaceHint(temperaturePropertyName));
@@ -297,9 +294,18 @@ namespace AdapterLib
 		AdapterValue^ humidityRHAttr_Value = ref new AdapterValue(humidityRHValueName, humidityRHValueData);
 		humidityProperty += humidityRHAttr_Value;
 
+		// GPIO Device Descriptor: Static data for our device
+		DEVICE_DESCRIPTOR gpioDeviceDesc;
+		this->LoadDeviceDesc();
+		gpioDeviceDesc.Name = deviceName;
+		gpioDeviceDesc.VendorName = vendorName;
+		gpioDeviceDesc.Model = modelName;
+		gpioDeviceDesc.Version = version;
+		gpioDeviceDesc.SerialNumer = serialNumber;
+		gpioDeviceDesc.Description = description;
 		// Finally, put it all into a new device
 		AdapterDevice^ gpioDevice = ref new AdapterDevice(&gpioDeviceDesc);
-
+		gpioDevice->Initialize();
 		gpioDevice->AddProperty(temperature_Property);		
 		gpioDevice->AddProperty(humidityProperty);
 		gpioDevice->AddProperty(pressureProperty);
@@ -310,6 +316,7 @@ namespace AdapterLib
 
         return ERROR_SUCCESS;
     }
+	
 	
 
     uint32
@@ -745,5 +752,37 @@ namespace AdapterLib
 		return (44330.77 * (1 - std::pow((Pascal / 101326), 0.1902632)) /*+ OFF_H*/); // OFF_H (disabled) is the user offset
 	}
 
+	void Adapter::LoadDeviceDesc()
+	{
+		HttpClient^ httpClient = nullptr;
+		//try {
+		httpClient = ref new HttpClient();
+		Uri^ uri = ref new Uri(L"http://localhost:8080/api/os/info");
+		IAsyncOperationWithProgress<Platform::String ^, HttpProgress>^ asyncOperation = httpClient->GetStringAsync(uri);
+
+		auto asyncTask = create_task(asyncOperation);
+		asyncTask.then([this](Platform::String ^ tResult) {
+
+			ParseJsonResponse(tResult);
+		});
+		/*	}
+		finally{
+		if (httpClient != nullptr) {
+		httpClient->Close();
+		httpClient = nullptr;
+		}
+		}*/
+
+	}
+
+	void Adapter::ParseJsonResponse(Platform::String ^ input)
+	{
+		JsonObject^ jsonResponse = JsonObject::Parse(input);
+		JsonValue^ jsonVal = jsonResponse->GetNamedValue(L"SqmMachineId");
+		
+		serialNumber = jsonVal->GetString();
+		// TODO: insert return statement here
+
+	}
 
 } // namespace AdapterLib

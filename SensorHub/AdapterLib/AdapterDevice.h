@@ -331,16 +331,22 @@ namespace AdapterLib
         // Control Panel Handler
         virtual property BridgeRT::IControlPanelHandler^ ControlPanelHandler
         {
-            BridgeRT::IControlPanelHandler^ get()
-            {
-                return nullptr;
-            }
+			BridgeRT::IControlPanelHandler^ get()
+			{
+				return m_controlPanel;
+			}
+			void set(BridgeRT::IControlPanelHandler^ controlPanel)
+			{
+				m_controlPanel = controlPanel;
+			}
         }
 
     internal:
 		AdapterDevice(Platform::String^ ObjectName);
         AdapterDevice(const DEVICE_DESCRIPTOR* DeviceDescPtr);
         AdapterDevice(const AdapterDevice^ Other);
+
+		void Initialize();
 
         // Adding Properties
         void AddProperty(BridgeRT::IAdapterProperty^ Property)
@@ -379,6 +385,9 @@ namespace AdapterLib
 
         // Device signals 
         std::vector<BridgeRT::IAdapterSignal^> signals;
+
+		// Control Panel for this device
+		BridgeRT::IControlPanelHandler^ m_controlPanel = nullptr;
 
 		bool ValidHtdu21dCyclicRedundancyCheck(
 			uint16 data_,

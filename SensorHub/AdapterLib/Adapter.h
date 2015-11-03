@@ -186,10 +186,11 @@ namespace AdapterLib
 		double	Pascal2InchesOfMercury(double Pascal);
 		double	Pascal2MmOfMercury(double Pascal);
 		double	Pascal2Altitude(double Pascal);
-		bool	ValidHtdu21dCyclicRedundancyCheck(uint32 data_, byte crc_);
+		bool	ValidHtdu21dCyclicRedundancyCheck(uint32 data_, byte crc_);		
 		Platform::String^ FormatInterfaceHint(Platform::String^ propertyName);
-
-    private:
+		void Adapter::LoadDeviceDesc();
+		void ParseJsonResponse(Platform::String ^ input);
+    
         Platform::String^ vendor;
         Platform::String^ adapterName;
         Platform::String^ version;

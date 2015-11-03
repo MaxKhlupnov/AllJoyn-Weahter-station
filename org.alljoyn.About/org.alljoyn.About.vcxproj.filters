@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>93220022-c0a9-4d00-a3f5-e7e28d8cd629</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="AboutConsumer.cpp" />
+    <ClCompile Include="AboutProducer.cpp" />
+    <ClCompile Include="AboutServiceEventAdapter.cpp" />
+    <ClCompile Include="AboutServiceEventArgs.cpp" />
+    <ClCompile Include="AboutSignals.cpp" />
+    <ClCompile Include="AboutWatcher.cpp" />
+    <ClCompile Include="AllJoynBusObjectManager.cpp" />
+    <ClCompile Include="AllJoynHelpers.cpp" />
+    <ClCompile Include="TypeConversionHelpers.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="AboutConsumer.h" />
+    <ClInclude Include="AboutEventArgs.h" />
+    <ClInclude Include="AboutMethodResults.h" />
+    <ClInclude Include="AboutProducer.h" />
+    <ClInclude Include="AboutServiceEventAdapter.h" />
+    <ClInclude Include="AboutServiceEventArgs.h" />
+    <ClInclude Include="AboutSignals.h" />
+    <ClInclude Include="AboutStructures.h" />
+    <ClInclude Include="AboutWatcher.h" />
+    <ClInclude Include="AllJoynBusObjectManager.h" />
+    <ClInclude Include="AllJoynHelpers.h" />
+    <ClInclude Include="IAboutService.h" />
+    <ClInclude Include="TypeConversionHelpers.h" />
+  </ItemGroup>
+</Project>

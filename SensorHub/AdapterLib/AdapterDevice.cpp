@@ -18,6 +18,7 @@ using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Windows::System::Profile;
 
 using namespace BridgeRT;
 using namespace DsbCommon;
@@ -205,4 +206,10 @@ namespace AdapterLib
 	{
 		return false;
 	}
+
+	void AdapterDevice::Initialize() {
+		
+		
+	}
+
 } // namespace AdapterLib

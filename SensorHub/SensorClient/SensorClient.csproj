@@ -171,6 +171,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\RemoteMonitoring\RemoteMonitoring.csproj">
+      <Project>{96e8b61d-4196-4602-a669-7fa4b160884e}</Project>
+      <Name>RemoteMonitoring</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AdapterLib\AdapterLib.vcxproj">
       <Project>{8d539c08-ea54-475f-b691-7bd8b8b67956}</Project>
       <Name>AdapterLib</Name>
