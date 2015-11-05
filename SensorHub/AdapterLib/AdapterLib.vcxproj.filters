@@ -10,11 +10,13 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Adapter.cpp" />
     <ClCompile Include="AdapterDevice.cpp" />
+    <ClCompile Include="Helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Adapter.h" />
     <ClInclude Include="AdapterDevice.h" />
+    <ClInclude Include="Helpers.h" />
   </ItemGroup>
 </Project>

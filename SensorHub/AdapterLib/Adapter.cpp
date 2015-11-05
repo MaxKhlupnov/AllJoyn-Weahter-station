@@ -15,11 +15,12 @@
 #include "pch.h"
 #include "Adapter.h"
 #include "AdapterDevice.h"
+#include "Helpers.h"
 #include <ppltasks.h>
 
 using namespace Windows::Data::Json;
 using namespace Windows::Web::Http;
-using namespace Windows::Foundation;
+
 
 using namespace Platform;
 using namespace Platform::Collections;
@@ -29,6 +30,7 @@ using namespace concurrency;
 
 using namespace BridgeRT;
 using namespace DsbCommon;
+using namespace AdapterLib;
 using namespace Windows::Devices::Gpio;
 using namespace Windows::Devices::I2c;
 using namespace Windows::Devices::Enumeration;
@@ -95,36 +97,36 @@ I2cDevice^ alspt19;  // Ambient Light Sensor
 namespace AdapterLib
 {
 
-    // $appguidcomment$
-    static const GUID APPLICATION_GUID = {0x755e83c7,0x52fe,0x4e25,{0xa9,0x13,0x4c,0x9c,0x81,0xf6,0x2f,0xf7}};
+	// $appguidcomment$
+	static const GUID APPLICATION_GUID = { 0x755e83c7,0x52fe,0x4e25,{0xa9,0x13,0x4c,0x9c,0x81,0xf6,0x2f,0xf7} };
 
-    Adapter::Adapter()
-    {
-        Windows::ApplicationModel::Package^ package = Windows::ApplicationModel::Package::Current;
-        Windows::ApplicationModel::PackageId^ packageId = package->Id;
-        Windows::ApplicationModel::PackageVersion versionFromPkg = packageId->Version;
+	Adapter::Adapter()
+	{
+		Windows::ApplicationModel::Package^ package = Windows::ApplicationModel::Package::Current;
+		Windows::ApplicationModel::PackageId^ packageId = package->Id;
+		Windows::ApplicationModel::PackageVersion versionFromPkg = packageId->Version;
 
-        this->vendor = L"MTC Moscow";
-        this->adapterName = L"SensorHub";
-        // the adapter prefix must be something like "com.mycompany" (only alpha num and dots)
-        // it is used by the Device System Bridge as root string for all services and interfaces it exposes
-        this->exposedAdapterPrefix = L"com." + DsbCommon::ToLower(this->vendor->Data());
-        this->exposedApplicationGuid = Platform::Guid(APPLICATION_GUID);
+		this->vendor = L"MTC Moscow";
+		this->adapterName = L"SensorHub";
+		// the adapter prefix must be something like "com.mycompany" (only alpha num and dots)
+		// it is used by the Device System Bridge as root string for all services and interfaces it exposes
+		this->exposedAdapterPrefix = L"com." + DsbCommon::ToLower(this->vendor->Data());
+		this->exposedApplicationGuid = Platform::Guid(APPLICATION_GUID);
 
-        if (nullptr != package &&
-            nullptr != packageId )
-        {
-            this->exposedApplicationName = packageId->Name;
-            this->version = versionFromPkg.Major.ToString() + L"." + versionFromPkg.Minor.ToString() + L"." + versionFromPkg.Revision.ToString() + L"." + versionFromPkg.Build.ToString();
-        }
-        else
-        {
-            this->exposedApplicationName = L"DeviceSystemBridge";
-            this->version = L"0.0.0.0";
-        }
-		
+		if (nullptr != package &&
+			nullptr != packageId)
+		{
+			this->exposedApplicationName = packageId->Name;
+			this->version = versionFromPkg.Major.ToString() + L"." + versionFromPkg.Minor.ToString() + L"." + versionFromPkg.Revision.ToString() + L"." + versionFromPkg.Build.ToString();
+		}
+		else
+		{
+			this->exposedApplicationName = L"DeviceSystemBridge";
+			this->version = L"0.0.0.0";
+		}
+
 		DsbBridge::LogInfo(L"Starting " + this->exposedApplicationName + " version " + this->version);
-		
+
 		DsbBridge::LogInfo(L"Initializing GPIO controller");
 		try {
 			controller = GpioController::GetDefault();
@@ -215,55 +217,55 @@ namespace AdapterLib
 
 			});
 		}
-		catch(Exception^ ex){
+		catch (Exception^ ex) {
 			DsbBridge::LogError(L"Error initializing GPIO", ex);
 			throw ex;
 		}
 
-    }
+	}
 
 
-    Adapter::~Adapter()
-    {
-    }
+	Adapter::~Adapter()
+	{
+	}
 
 
-    _Use_decl_annotations_
-    uint32
-    Adapter::SetConfiguration(const Platform::Array<byte>^ ConfigurationData)
-    {
-        UNREFERENCED_PARAMETER(ConfigurationData);
+	_Use_decl_annotations_
+		uint32
+		Adapter::SetConfiguration(const Platform::Array<byte>^ ConfigurationData)
+	{
+		UNREFERENCED_PARAMETER(ConfigurationData);
 
-        return ERROR_SUCCESS;
-    }
-
-
-    _Use_decl_annotations_
-    uint32
-    Adapter::GetConfiguration(Platform::Array<byte>^* ConfigurationDataPtr)
-    {
-        UNREFERENCED_PARAMETER(ConfigurationDataPtr);
-
-        return ERROR_SUCCESS;
-    }
+		return ERROR_SUCCESS;
+	}
 
 
-    uint32
-    Adapter::Initialize()
-    {		
+	_Use_decl_annotations_
+		uint32
+		Adapter::GetConfiguration(Platform::Array<byte>^* ConfigurationDataPtr)
+	{
+		UNREFERENCED_PARAMETER(ConfigurationDataPtr);
+
+		return ERROR_SUCCESS;
+	}
+
+
+	uint32
+		Adapter::Initialize()
+	{
 
 		// Define Temperature C as device property. Device contains properties		
 		AdapterProperty^ temperature_Property = ref new AdapterProperty(temperaturePropertyName, this->FormatInterfaceHint(temperaturePropertyName));
 
 		temperatureCelsiusValueData = static_cast<double>(this->TemperatureCelcius);
-		AdapterValue^ temperatureCelsiusAttr_Value = ref new AdapterValue(temperatureCelsiusValueName, temperatureCelsiusValueData);		
+		AdapterValue^ temperatureCelsiusAttr_Value = ref new AdapterValue(temperatureCelsiusValueName, temperatureCelsiusValueData);
 		temperature_Property += temperatureCelsiusAttr_Value;
 
 		temperatureFahrenheitsValueData = static_cast<double>(this->Celcius2Fahrenheits(static_cast<double>(temperatureCelsiusValueData)));
-		AdapterValue^ temperatureFahrenheitsAttr_Value = ref new AdapterValue(temperatureFahrenheitsValueName, temperatureFahrenheitsValueData);		
+		AdapterValue^ temperatureFahrenheitsAttr_Value = ref new AdapterValue(temperatureFahrenheitsValueName, temperatureFahrenheitsValueData);
 		temperature_Property += temperatureFahrenheitsAttr_Value;
-		
-		
+
+
 
 		// Define Pressure as device property. Device contains properties
 		AdapterProperty^ pressureProperty = ref new AdapterProperty(pressurePropertyName, this->FormatInterfaceHint(pressurePropertyName));
@@ -306,7 +308,7 @@ namespace AdapterLib
 		// Finally, put it all into a new device
 		AdapterDevice^ gpioDevice = ref new AdapterDevice(&gpioDeviceDesc);
 		gpioDevice->Initialize();
-		gpioDevice->AddProperty(temperature_Property);		
+		gpioDevice->AddProperty(temperature_Property);
 		gpioDevice->AddProperty(humidityProperty);
 		gpioDevice->AddProperty(pressureProperty);
 
@@ -314,215 +316,215 @@ namespace AdapterLib
 
 
 
-        return ERROR_SUCCESS;
-    }
-	
-	
-
-    uint32
-    Adapter::Shutdown()
-    {
-        return ERROR_SUCCESS;
-    }
+		return ERROR_SUCCESS;
+	}
 
 
-    _Use_decl_annotations_
-    uint32
-    Adapter::EnumDevices(
-        ENUM_DEVICES_OPTIONS Options,
-        IAdapterDeviceVector^* DeviceListPtr,
-        IAdapterIoRequest^* RequestPtr
-        )
-    {
-        UNREFERENCED_PARAMETER(Options);
-        UNREFERENCED_PARAMETER(RequestPtr);
 
-        try
-        {
-            *DeviceListPtr = ref new BridgeRT::AdapterDeviceVector(this->devices);
-        }
-        catch (OutOfMemoryException^ ex)
-        {
-            throw ref new OutOfMemoryException(ex->Message);
-        }
-
-        return ERROR_SUCCESS;
-    }
+	uint32
+		Adapter::Shutdown()
+	{
+		return ERROR_SUCCESS;
+	}
 
 
-    _Use_decl_annotations_
-    uint32
-    Adapter::GetProperty(
-        IAdapterProperty^ Property,
-        IAdapterIoRequest^* RequestPtr
-        )
-    {
-        UNREFERENCED_PARAMETER(Property);
-        UNREFERENCED_PARAMETER(RequestPtr);
+	_Use_decl_annotations_
+		uint32
+		Adapter::EnumDevices(
+			ENUM_DEVICES_OPTIONS Options,
+			IAdapterDeviceVector^* DeviceListPtr,
+			IAdapterIoRequest^* RequestPtr
+			)
+	{
+		UNREFERENCED_PARAMETER(Options);
+		UNREFERENCED_PARAMETER(RequestPtr);
 
-        return ERROR_SUCCESS;
-    }
+		try
+		{
+			*DeviceListPtr = ref new BridgeRT::AdapterDeviceVector(this->devices);
+		}
+		catch (OutOfMemoryException^ ex)
+		{
+			throw ref new OutOfMemoryException(ex->Message);
+		}
 
-
-    _Use_decl_annotations_
-    uint32
-    Adapter::SetProperty(
-        IAdapterProperty^ Property,
-        IAdapterIoRequest^* RequestPtr
-        )
-    {
-        UNREFERENCED_PARAMETER(Property);
-        UNREFERENCED_PARAMETER(RequestPtr);
-
-        return ERROR_SUCCESS;
-    }
+		return ERROR_SUCCESS;
+	}
 
 
-    _Use_decl_annotations_
-    uint32
-    Adapter::GetPropertyValue(
-        IAdapterProperty^ Property,
-        String^ AttributeName,
-        IAdapterValue^* ValuePtr,
-        IAdapterIoRequest^* RequestPtr
-        )
-    {
-        UNREFERENCED_PARAMETER(Property);        
-        UNREFERENCED_PARAMETER(ValuePtr);
-        UNREFERENCED_PARAMETER(RequestPtr);
+	_Use_decl_annotations_
+		uint32
+		Adapter::GetProperty(
+			IAdapterProperty^ Property,
+			IAdapterIoRequest^* RequestPtr
+			)
+	{
+		UNREFERENCED_PARAMETER(Property);
+		UNREFERENCED_PARAMETER(RequestPtr);
+
+		return ERROR_SUCCESS;
+	}
+
+
+	_Use_decl_annotations_
+		uint32
+		Adapter::SetProperty(
+			IAdapterProperty^ Property,
+			IAdapterIoRequest^* RequestPtr
+			)
+	{
+		UNREFERENCED_PARAMETER(Property);
+		UNREFERENCED_PARAMETER(RequestPtr);
+
+		return ERROR_SUCCESS;
+	}
+
+
+	_Use_decl_annotations_
+		uint32
+		Adapter::GetPropertyValue(
+			IAdapterProperty^ Property,
+			String^ AttributeName,
+			IAdapterValue^* ValuePtr,
+			IAdapterIoRequest^* RequestPtr
+			)
+	{
+		UNREFERENCED_PARAMETER(Property);
+		UNREFERENCED_PARAMETER(ValuePtr);
+		UNREFERENCED_PARAMETER(RequestPtr);
 		UNREFERENCED_PARAMETER(AttributeName);
 
-			AutoLock sync(&m_gpioLock, true);
+		AutoLock sync(&m_gpioLock, true);
 
-			AdapterProperty^ adapterProperty = dynamic_cast<AdapterProperty^>(Property);
-			AdapterValue^ attribute;//ynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+		AdapterProperty^ adapterProperty = dynamic_cast<AdapterProperty^>(Property);
+		AdapterValue^ attribute;//ynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
 
-			if (Property->Name->Equals(temperaturePropertyName)) {
-				temperatureCelsiusValueData = static_cast<double>(this->TemperatureCelcius);
-				if (AttributeName->Equals(temperatureCelsiusValueName)) {
-					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
-					attribute->Data = temperatureCelsiusValueData;
-				}
-				if (AttributeName->Equals(temperatureFahrenheitsValueName)) {
-					temperatureFahrenheitsValueData = static_cast<double>(this->Celcius2Fahrenheits(static_cast<double>(temperatureCelsiusValueData)));
-					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
-					attribute->Data = temperatureFahrenheitsValueData;
-				}
-			}
-
-			if (Property->Name->Equals(pressurePropertyName)) {
-				pressurePascalValueData = static_cast<double>(this->Pressure);
-
-				if (AttributeName->Equals(pressurePascalValueName)) {
-					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
-					attribute->Data = static_cast<double>(this->Pressure);
-				}
-				if (AttributeName->Equals(pressureMmOfMercuryValueName)) {
-					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
-					attribute->Data = static_cast<double>(this->Pascal2MmOfMercury(static_cast<double>(pressurePascalValueData)));
-				}
-				if (AttributeName->Equals(pressureInchesOfMercuryValueName)) {
-					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(2));
-					attribute->Data = static_cast<double>(this->Pascal2InchesOfMercury(static_cast<double>(pressurePascalValueData)));
-				}
-				if (AttributeName->Equals(pressureAltitudeValueName)) {
-					attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(3));
-					attribute->Data = static_cast<double>(this->Pascal2Altitude(static_cast<double>(pressurePascalValueData)));
-				}
-			}
-
-			if (Property->Name->Equals(humidityPropertyName)) {
-				humidityRHValueData = static_cast<double>(this->Humidity);
+		if (Property->Name->Equals(temperaturePropertyName)) {
+			temperatureCelsiusValueData = static_cast<double>(this->TemperatureCelcius);
+			if (AttributeName->Equals(temperatureCelsiusValueName)) {
 				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
-				attribute->Data = humidityRHValueData;
+				attribute->Data = temperatureCelsiusValueData;
 			}
+			if (AttributeName->Equals(temperatureFahrenheitsValueName)) {
+				temperatureFahrenheitsValueData = static_cast<double>(this->Celcius2Fahrenheits(static_cast<double>(temperatureCelsiusValueData)));
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
+				attribute->Data = temperatureFahrenheitsValueData;
+			}
+		}
 
-			*ValuePtr = attribute;		
+		if (Property->Name->Equals(pressurePropertyName)) {
+			pressurePascalValueData = static_cast<double>(this->Pressure);
 
-        return ERROR_SUCCESS;
-    }
+			if (AttributeName->Equals(pressurePascalValueName)) {
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+				attribute->Data = static_cast<double>(this->Pressure);
+			}
+			if (AttributeName->Equals(pressureMmOfMercuryValueName)) {
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(1));
+				attribute->Data = static_cast<double>(this->Pascal2MmOfMercury(static_cast<double>(pressurePascalValueData)));
+			}
+			if (AttributeName->Equals(pressureInchesOfMercuryValueName)) {
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(2));
+				attribute->Data = static_cast<double>(this->Pascal2InchesOfMercury(static_cast<double>(pressurePascalValueData)));
+			}
+			if (AttributeName->Equals(pressureAltitudeValueName)) {
+				attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(3));
+				attribute->Data = static_cast<double>(this->Pascal2Altitude(static_cast<double>(pressurePascalValueData)));
+			}
+		}
 
+		if (Property->Name->Equals(humidityPropertyName)) {
+			humidityRHValueData = static_cast<double>(this->Humidity);
+			attribute = dynamic_cast<AdapterValue^>(adapterProperty->Attributes->GetAt(0));
+			attribute->Data = humidityRHValueData;
+		}
 
-    _Use_decl_annotations_
-    uint32
-    Adapter::SetPropertyValue(
-        IAdapterProperty^ Property,
-        IAdapterValue^ Value,
-        IAdapterIoRequest^* RequestPtr
-        )
-    {
-        UNREFERENCED_PARAMETER(Property);
-        UNREFERENCED_PARAMETER(Value);
-        UNREFERENCED_PARAMETER(RequestPtr);
+		*ValuePtr = attribute;
 
-        return ERROR_SUCCESS;
-    }
-
-
-    _Use_decl_annotations_
-    uint32
-    Adapter::CallMethod(
-        IAdapterMethod^ Method,
-        IAdapterIoRequest^* RequestPtr
-        )
-    {
-        UNREFERENCED_PARAMETER(Method);
-        UNREFERENCED_PARAMETER(RequestPtr);
-
-        return ERROR_SUCCESS;
-    }
-
-
-    _Use_decl_annotations_
-    uint32
-    Adapter::RegisterSignalListener(
-        IAdapterSignal^ Signal,
-        IAdapterSignalListener^ Listener,
-        Object^ ListenerContext
-        )
-    {
-        UNREFERENCED_PARAMETER(Signal);
-        UNREFERENCED_PARAMETER(Listener);
-        UNREFERENCED_PARAMETER(ListenerContext);
-
-        return ERROR_SUCCESS;
-    }
+		return ERROR_SUCCESS;
+	}
 
 
-    _Use_decl_annotations_
-    uint32
-    Adapter::UnregisterSignalListener(
-        IAdapterSignal^ Signal,
-        IAdapterSignalListener^ Listener
-        )
-    {
-        UNREFERENCED_PARAMETER(Signal);
-        UNREFERENCED_PARAMETER(Listener);
+	_Use_decl_annotations_
+		uint32
+		Adapter::SetPropertyValue(
+			IAdapterProperty^ Property,
+			IAdapterValue^ Value,
+			IAdapterIoRequest^* RequestPtr
+			)
+	{
+		UNREFERENCED_PARAMETER(Property);
+		UNREFERENCED_PARAMETER(Value);
+		UNREFERENCED_PARAMETER(RequestPtr);
 
-        return ERROR_SUCCESS;
-    }
-
-
-    _Use_decl_annotations_
-    uint32
-    Adapter::NotifySignalListener(
-        IAdapterSignal^ Signal
-        )
-    {
-        UNREFERENCED_PARAMETER(Signal);
-
-        return ERROR_SUCCESS;
-    }
+		return ERROR_SUCCESS;
+	}
 
 
-    uint32
-    Adapter::createSignals()
-    {
-        return ERROR_SUCCESS;
-    }
+	_Use_decl_annotations_
+		uint32
+		Adapter::CallMethod(
+			IAdapterMethod^ Method,
+			IAdapterIoRequest^* RequestPtr
+			)
+	{
+		UNREFERENCED_PARAMETER(Method);
+		UNREFERENCED_PARAMETER(RequestPtr);
+
+		return ERROR_SUCCESS;
+	}
+
+
+	_Use_decl_annotations_
+		uint32
+		Adapter::RegisterSignalListener(
+			IAdapterSignal^ Signal,
+			IAdapterSignalListener^ Listener,
+			Object^ ListenerContext
+			)
+	{
+		UNREFERENCED_PARAMETER(Signal);
+		UNREFERENCED_PARAMETER(Listener);
+		UNREFERENCED_PARAMETER(ListenerContext);
+
+		return ERROR_SUCCESS;
+	}
+
+
+	_Use_decl_annotations_
+		uint32
+		Adapter::UnregisterSignalListener(
+			IAdapterSignal^ Signal,
+			IAdapterSignalListener^ Listener
+			)
+	{
+		UNREFERENCED_PARAMETER(Signal);
+		UNREFERENCED_PARAMETER(Listener);
+
+		return ERROR_SUCCESS;
+	}
+
+
+	_Use_decl_annotations_
+		uint32
+		Adapter::NotifySignalListener(
+			IAdapterSignal^ Signal
+			)
+	{
+		UNREFERENCED_PARAMETER(Signal);
+
+		return ERROR_SUCCESS;
+	}
+
+
+	uint32
+		Adapter::createSignals()
+	{
+		return ERROR_SUCCESS;
+	}
 	uint32 Adapter::rawTemperature()
 	{
-		try {			
+		try {
 			uint32 temperature = 0;
 			int byteLen = 3;
 			Platform::Array<BYTE>^ i2c_temperature_data = ref new Platform::Array<BYTE>(byteLen);
@@ -575,14 +577,14 @@ namespace AdapterLib
 			throw ex;
 		}
 
-	//	return ERROR_SUCCESS;
+		//	return ERROR_SUCCESS;
 	}
 
 	bool Adapter::ValidHtdu21dCyclicRedundancyCheck(
 		uint32 data_,
 		byte crc_
 		)
-	{		
+	{
 		/*
 		* Validate the 8-bit cyclic redundancy check (CRC) byte
 		* CRC: http://en.wikipedia.org/wiki/Cyclic_redundancy_check
@@ -754,24 +756,22 @@ namespace AdapterLib
 
 	void Adapter::LoadDeviceDesc()
 	{
-		HttpClient^ httpClient = nullptr;
-		//try {
-		httpClient = ref new HttpClient();
-		Uri^ uri = ref new Uri(L"http://localhost:8080/api/os/info");
-		IAsyncOperationWithProgress<Platform::String ^, HttpProgress>^ asyncOperation = httpClient->GetStringAsync(uri);
+					
+			HttpClient^ httpClient = Helpers::CreateHttpClient();
+			Platform::String^ output = ref new Platform::String();
+			Uri^ uri = ref new Uri(L"http://localhost:8080/api/os/info");
 
-		auto asyncTask = create_task(asyncOperation);
-		asyncTask.then([this](Platform::String ^ tResult) {
+			// Do an asynchronous GET. We need to use use_current() with the continuations since the tasks are completed on
+			// background threads and we need to run on the UI thread to update the UI.
+			create_task(httpClient->GetAsync(uri)).then([=](HttpResponseMessage^ response)
+			{				
+				Helpers::GetJSONResultAsync(output, response);
 
-			ParseJsonResponse(tResult);
-		});
-		/*	}
-		finally{
-		if (httpClient != nullptr) {
-		httpClient->Close();
-		httpClient = nullptr;
-		}
-		}*/
+			}, task_continuation_context::use_current()).then([=](task<HttpResponseMessage^> previousTask)
+			{				
+					HttpResponseMessage^ response = previousTask.get();
+			}
+			);
 
 	}
 
