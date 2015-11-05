@@ -26,27 +26,6 @@ using namespace Windows::Storage::Streams;
 
 namespace  AdapterLib
 {
-	task<HttpResponseMessage^> Helpers::GetJSONResultAsync(Platform::String ^ output, Windows::Web::Http::HttpResponseMessage ^ response)
-	{
-
-		// Read content as string. We need to use use_current() with the continuations since the tasks are completed on
-		// background threads and we need parse JSON.
-		task<Platform::String^> readAsStringTask(response->Content->ReadAsStringAsync());
-
-		return readAsStringTask.then([=](Platform::String^ responseBodyAsText) {
-			
-			//output += responseBodyAsText;
-
-			return response;
-
-		}, task_continuation_context::use_current());
-
-		/*task<Platform::String^> theTask = create_task(response->Content->ReadAsStringAsync()).then([=](Platform::String^ responseBodyAsText) {
-			return responseBodyAsText;
-		}, task_continuation_context::use_current());
-
-		return theTask;*/
-	}
 
 
 	HttpClient^ Helpers::CreateHttpClient()

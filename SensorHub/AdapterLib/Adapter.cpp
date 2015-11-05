@@ -761,17 +761,22 @@ namespace AdapterLib
 			Platform::String^ output = ref new Platform::String();
 			Uri^ uri = ref new Uri(L"http://localhost:8080/api/os/info");
 
-			// Do an asynchronous GET. We need to use use_current() with the continuations since the tasks are completed on
-			// background threads and we need to run on the UI thread to update the UI.
-			create_task(httpClient->GetAsync(uri)).then([=](HttpResponseMessage^ response)
-			{				
-				Helpers::GetJSONResultAsync(output, response);
-
-			}, task_continuation_context::use_current()).then([=](task<HttpResponseMessage^> previousTask)
-			{				
-					HttpResponseMessage^ response = previousTask.get();
+			// Always catch network exceptions for async methods
+			try
+			{
+				task<HttpResponseMessage^> sendRequestTask(httpClient->GetAsync(uri));
+				sendRequestTask.wait();
+				HttpResponseMessage^ response = sendRequestTask.get();
+				long len = 0;
+				create_task(response->Content->ReadAsStringAsync()).then([=](String^ content){
+					ParseJsonResponse(content);
+				});
 			}
-			);
+			catch (Exception ^ ex)
+			{
+				// Details in ex.Message and ex.HResult.       
+			}
+
 
 	}
 

@@ -21,7 +21,7 @@ namespace  AdapterLib
 		{
 		public:
 			
-			static task<HttpResponseMessage^> GetJSONResultAsync(Platform::String^ output, Windows::Web::Http::HttpResponseMessage^ response);
+		//	static task<HttpResponseMessage^> GetJSONResultAsync(Platform::String^ output, Windows::Web::Http::HttpResponseMessage^ response);
 
 			static Windows::Web::Http::HttpClient^ CreateHttpClient();
 
