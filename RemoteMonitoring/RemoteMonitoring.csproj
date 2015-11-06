@@ -107,9 +107,14 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Devices\IDevice.cs" />
+    <Compile Include="Common\Models\InitialDeviceConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\ISerialize.cs" />
     <Compile Include="Serialization\JsonSerialize.cs" />
+    <Compile Include="Telemetry\ITelemetry.cs" />
+    <Compile Include="Transport\DeserializableCommand.cs" />
+    <Compile Include="Transport\ITransport.cs" />
     <Content Include="Properties\RemoteMonitoring.rd.xml" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
