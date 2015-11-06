@@ -17,10 +17,11 @@ using namespace Windows::Data::Json;
 
 namespace  AdapterLib
     {
-		public ref class Helpers sealed
+		class Helpers sealed
 		{
 		public:
-			
+			static concurrency::task<Platform::String ^> GetTextResultAsync(Windows::Web::Http::HttpResponseMessage^ response, 
+				concurrency::cancellation_token token);
 		//	static task<HttpResponseMessage^> GetJSONResultAsync(Platform::String^ output, Windows::Web::Http::HttpResponseMessage^ response);
 
 			static Windows::Web::Http::HttpClient^ CreateHttpClient();

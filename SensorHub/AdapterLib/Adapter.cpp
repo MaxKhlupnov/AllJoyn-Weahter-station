@@ -105,6 +105,7 @@ namespace AdapterLib
 		Windows::ApplicationModel::Package^ package = Windows::ApplicationModel::Package::Current;
 		Windows::ApplicationModel::PackageId^ packageId = package->Id;
 		Windows::ApplicationModel::PackageVersion versionFromPkg = packageId->Version;
+		this->cancellationTokenSource = cancellation_token_source();
 
 		this->vendor = L"MTC Moscow";
 		this->adapterName = L"SensorHub";
@@ -759,23 +760,33 @@ namespace AdapterLib
 					
 			HttpClient^ httpClient = Helpers::CreateHttpClient();
 			Platform::String^ output = ref new Platform::String();
-			Uri^ uri = ref new Uri(L"http://localhost:8080/api/os/info");
+			//Uri^ uri = ref new Uri(L"http://10.101.50.59:8080/api/os/info");
+			Uri^ uri = ref new Uri(L"http://www.yandex.ru");
 
-			// Always catch network exceptions for async methods
-			try
+			create_task(httpClient->GetAsync(uri), cancellationTokenSource.get_token()).then([=](HttpResponseMessage^ response)
 			{
-				task<HttpResponseMessage^> sendRequestTask(httpClient->GetAsync(uri));
-				sendRequestTask.wait();
-				HttpResponseMessage^ response = sendRequestTask.get();
-				long len = 0;
-				create_task(response->Content->ReadAsStringAsync()).then([=](String^ content){
-					ParseJsonResponse(content);
-				});
-			}
-			catch (Exception ^ ex)
+				return Helpers::GetTextResultAsync(response, cancellationTokenSource.get_token());
+			}, task_continuation_context::use_current()).then([=](task<String^> previousTask)
 			{
-				// Details in ex.Message and ex.HResult.       
-			}
+				try
+				{
+					String^ response = previousTask.get();
+					ParseJsonResponse(response);
+					// Check if any previous task threw an exception.
+					//HttpResponseMessage^ response = previousTask.get();
+					//"Completed. Response came from " + response->Source.ToString() + ".",
+
+				}
+				catch (const task_canceled&)
+				{
+					// "Request canceled."
+				}
+				catch (Exception^ ex)
+				{
+					// "Error: " + ex->Message, NotifyType::ErrorMessage);
+				}
+
+			});
 
 
 	}

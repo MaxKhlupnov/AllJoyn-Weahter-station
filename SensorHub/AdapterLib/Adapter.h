@@ -14,8 +14,11 @@
 //
 #pragma once
 
+
 #include "AdapterDefinitions.h"
 #include "Misc.h"
+#include <ppltasks.h>
+using namespace concurrency;
 
 namespace AdapterLib
 {
@@ -212,6 +215,8 @@ namespace AdapterLib
         // Sync object
         DsbCommon::CSLock lock;
 		DsbCommon::CSLock m_gpioLock;
+
+		concurrency::cancellation_token_source cancellationTokenSource;
 
         //
         // Signal listener entry
