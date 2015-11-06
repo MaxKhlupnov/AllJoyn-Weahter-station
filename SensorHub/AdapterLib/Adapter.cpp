@@ -106,7 +106,8 @@ namespace AdapterLib
 		Windows::ApplicationModel::PackageId^ packageId = package->Id;
 		Windows::ApplicationModel::PackageVersion versionFromPkg = packageId->Version;
 		this->cancellationTokenSource = cancellation_token_source();
-
+		
+		this->LoadDeviceDesc();
 		this->vendor = L"MTC Moscow";
 		this->adapterName = L"SensorHub";
 		// the adapter prefix must be something like "com.mycompany" (only alpha num and dots)
@@ -298,8 +299,7 @@ namespace AdapterLib
 		humidityProperty += humidityRHAttr_Value;
 
 		// GPIO Device Descriptor: Static data for our device
-		DEVICE_DESCRIPTOR gpioDeviceDesc;
-		this->LoadDeviceDesc();
+		DEVICE_DESCRIPTOR gpioDeviceDesc;		
 		gpioDeviceDesc.Name = deviceName;
 		gpioDeviceDesc.VendorName = vendorName;
 		gpioDeviceDesc.Model = modelName;
@@ -760,9 +760,8 @@ namespace AdapterLib
 					
 			HttpClient^ httpClient = Helpers::CreateHttpClient();
 			Platform::String^ output = ref new Platform::String();
-			//Uri^ uri = ref new Uri(L"http://10.101.50.59:8080/api/os/info");
-			Uri^ uri = ref new Uri(L"http://www.yandex.ru");
-
+			Uri^ uri = ref new Uri(L"http://localhost:8080/api/os/info");
+			
 			create_task(httpClient->GetAsync(uri), cancellationTokenSource.get_token()).then([=](HttpResponseMessage^ response)
 			{
 				return Helpers::GetTextResultAsync(response, cancellationTokenSource.get_token());
@@ -770,20 +769,20 @@ namespace AdapterLib
 			{
 				try
 				{
-					String^ response = previousTask.get();
-					ParseJsonResponse(response);
-					// Check if any previous task threw an exception.
-					//HttpResponseMessage^ response = previousTask.get();
-					//"Completed. Response came from " + response->Source.ToString() + ".",
-
+					
+						String^ response = previousTask.get();
+						if (response != nullptr && !response->IsEmpty()) {
+							ParseJsonResponse(response);
+							DsbBridge::LogInfo(L"Request http://localhost:8080/api/os/info compleated");
+						}
 				}
 				catch (const task_canceled&)
 				{
-					// "Request canceled."
+					DsbBridge::LogInfo(L"Request http://localhost:8080/api/os/info was canceled");
 				}
 				catch (Exception^ ex)
 				{
-					// "Error: " + ex->Message, NotifyType::ErrorMessage);
+					DsbBridge::LogError(L"Error calling http://localhost:8080/api/os/info", ex);				
 				}
 
 			});
@@ -794,11 +793,20 @@ namespace AdapterLib
 	void Adapter::ParseJsonResponse(Platform::String ^ input)
 	{
 		JsonObject^ jsonResponse = JsonObject::Parse(input);
-		JsonValue^ jsonVal = jsonResponse->GetNamedValue(L"SqmMachineId");
-		
-		serialNumber = jsonVal->GetString();
-		// TODO: insert return statement here
+		JsonValue^ jsonVal = jsonResponse->GetNamedValue(L"ComputerName");		
+			deviceName = jsonVal->GetString();
 
+			jsonVal = jsonResponse->GetNamedValue(L"OsEdition");
+			vendorName = jsonVal->GetString();
+
+			 jsonVal = jsonResponse->GetNamedValue(L"Platform");
+			 modelName = jsonVal->GetString();
+
+			 jsonVal = jsonResponse->GetNamedValue(L"OsVersion");
+			 version = jsonVal->GetString();
+		
+			jsonVal = jsonResponse->GetNamedValue(L"SqmMachineId");
+			serialNumber = jsonVal->GetString();		
 	}
 
 } // namespace AdapterLib

@@ -28,17 +28,14 @@ namespace  AdapterLib
 {
 	concurrency::task<Platform::String ^> AdapterLib::Helpers::GetTextResultAsync(Windows::Web::Http::HttpResponseMessage ^ response,
 		 concurrency::cancellation_token token)
-	{
-	
-		
-		task<Platform::String^> readAsStringTask(response->Content->ReadAsStringAsync(), token);
-		return readAsStringTask.then([=](Platform::String^ responseBodyAsText) mutable {
-			return responseBodyAsText;
-			/*std::wstring ws = responseBodyAsText->Data();
-			output = Platform::String::Concat(output, ref new Platform::String(ws.c_str()));
-			return response;*/
-		}, task_continuation_context::use_current());
+	{		
+			task<Platform::String^> readAsStringTask(response->Content->ReadAsStringAsync(), token);
 
+			return readAsStringTask.then([=](Platform::String^ responseBodyAsText) mutable {
+				return responseBodyAsText;
+
+			}, task_continuation_context::use_current());
+				
 	}
 
 	HttpClient^ Helpers::CreateHttpClient()
@@ -46,9 +43,9 @@ namespace  AdapterLib
 		HttpClient^ httpClient = ref new HttpClient();
 
 		Platform::String^ username = "Administrator";
-		Platform::String^ password = "p@ssw0rd12";
+		Platform::String^ password = "p@ssw0rd";
 		//Platform::String^ pwdString = Platform::String::Concat()
-		IBuffer^ buffer = CryptographicBuffer::ConvertStringToBinary(username + L":" + password, BinaryStringEncoding::Utf16LE);
+		IBuffer^ buffer = CryptographicBuffer::ConvertStringToBinary(username + L":" + password, BinaryStringEncoding::Utf8);
 		Platform::String^ base64token = CryptographicBuffer::EncodeToBase64String(buffer);
 
 		httpClient->DefaultRequestHeaders->Authorization = ref new HttpCredentialsHeaderValue(L"Basic", base64token);
