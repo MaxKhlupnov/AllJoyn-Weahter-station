@@ -107,15 +107,39 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandProcessors\CommandProcessor.cs" />
+    <Compile Include="CommandProcessors\PingDeviceProcessor.cs" />
+    <Compile Include="Common\Configurations\IConfigurationProvider.cs" />
+    <Compile Include="Common\DeviceSchema\CommandSchemaHelper.cs" />
+    <Compile Include="Common\DeviceSchema\DeviceSchemaHelper.cs" />
+    <Compile Include="Common\DeviceSchema\EventSchemaHelper.cs" />
+    <Compile Include="Common\Exceptions\DeviceRequiredPropertyNotFoundException.cs" />
+    <Compile Include="Common\Helpers\AzureRetryHelper.cs" />
+    <Compile Include="Common\Helpers\ReflectionHelper.cs" />
+    <Compile Include="Common\IoTHubException.cs" />
+    <Compile Include="Common\Models\Commands\Command.cs" />
+    <Compile Include="Common\Models\Commands\DeviceCommandConstants.cs" />
+    <Compile Include="Common\Models\DeviceModelConstants.cs" />
+    <Compile Include="Common\Models\Parameter.cs" />
+    <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\IDevice.cs" />
     <Compile Include="Common\Models\InitialDeviceConfig.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\TraceLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\ISerialize.cs" />
     <Compile Include="Serialization\JsonSerialize.cs" />
+    <Compile Include="Telemetry\Factory\ITelemetryFactory.cs" />
     <Compile Include="Telemetry\ITelemetry.cs" />
     <Compile Include="Transport\DeserializableCommand.cs" />
+    <Compile Include="Transport\Factory\IotHubTransportFactory.cs" />
+    <Compile Include="Transport\Factory\ITransportFactory.cs" />
+    <Compile Include="Transport\IoTHubTransport.cs" />
     <Compile Include="Transport\ITransport.cs" />
     <Content Include="Properties\RemoteMonitoring.rd.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Repository\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

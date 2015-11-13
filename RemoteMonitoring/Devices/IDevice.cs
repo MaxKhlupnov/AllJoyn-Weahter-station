@@ -26,7 +26,7 @@ namespace RemoteMonitoring.Devices
 
         bool RepeatEventListForever { get; set; }
 
-        void Init(InitialDeviceConfig config);
+        void Init(InitialDeviceConfig config, dynamic initialDevice);
 
 
         Task SendDeviceInfo();
