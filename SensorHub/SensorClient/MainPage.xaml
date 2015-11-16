@@ -24,15 +24,15 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Border Background="{StaticResource SectionBackground1}" Width="300" Height="200">
-                    <WinRTcontrols:Gauge  Value="{x:Bind LastMeasure.value}" Minimum="15"  
+                    <WinRTcontrols:Gauge  Value="{x:Bind LastMeasure.Value}" Minimum="15"  
                                           Maximum="110"  
-                                          Unit="{x:Bind LastMeasure.unitofmeasure}" Height="200"/>
+                                          Unit="{x:Bind LastMeasure.UnitOfMeasure}" Height="200"/>
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="10,0,0,0">
                     <TextBlock Text="{x:Bind Title}" Style="{StaticResource BaseTextBlockStyle}" TextWrapping="NoWrap"/>
                     <TextBlock Text="{x:Bind Location}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
-                    <TextBlock Text="{x:Bind LastMeasure.value, Converter={StaticResource doubleToStringConverter}}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
-                    <TextBlock Text="{x:Bind LastMeasure.unitofmeasure}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
+                    <TextBlock Text="{x:Bind LastMeasure.Value, Converter={StaticResource doubleToStringConverter}}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
+                    <TextBlock Text="{x:Bind LastMeasure.UnitOfMeasure}" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
                 </StackPanel>
             </Grid>
         </DataTemplate>

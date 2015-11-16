@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
+
+using SensorClient.DataModel.Telemetry;
+
 using com.mtcmoscow.SensorHub.Temperature;
 
 namespace SensorClient.DataModel
@@ -39,20 +42,21 @@ namespace SensorClient.DataModel
         }
 
 
-        protected async override Task<ConnectTheDotsMeasure> ReadDataAsync()
+        protected async override Task<SensorTelemetryData> ReadDataAsync()
         {
-            ConnectTheDotsMeasure measure = new ConnectTheDotsMeasure(this.UniqueName, this.Title, Units.ToString());
-            measure.timecreated = DateTimeOffset.Now.ToLocalTime().ToString();
-            
+            SensorTelemetryData measure = new SensorTelemetryData();
+            measure.UnitOfMeasure = Units.ToString();
+
+
             if (this.Units == TemperatureUnits.Celsius)
             {
                 TemperatureGetCelsiusResult cResults =   await this.consumer.GetCelsiusAsync();
-                measure.value = cResults.Celsius;
+                measure.Value = cResults.Celsius;
                 return measure;
             }else if (this.Units == TemperatureUnits.Fahrenheits)
             {
                 TemperatureGetFahrenheitsResult fResult = await this.consumer.GetFahrenheitsAsync();
-                measure.value = fResult.Fahrenheits;
+                measure.Value = fResult.Fahrenheits;
                 return measure;
             }
 

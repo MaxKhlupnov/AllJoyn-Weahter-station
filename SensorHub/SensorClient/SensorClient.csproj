@@ -112,6 +112,7 @@
     <Compile Include="Common\BooleanToVisibilityConverter.cs" />
     <Compile Include="Common\ColorStringConverter.cs" />
     <Compile Include="Common\ComboBoxItemToStringConverter.cs" />
+    <Compile Include="Common\ConfigurationProvider.cs" />
     <Compile Include="Common\DoubleToIntConverter.cs" />
     <Compile Include="Common\MaxGaugeValueConverter.cs" />
     <Compile Include="Common\MinGaugeValueConverter.cs" />
@@ -123,18 +124,25 @@
     <Compile Include="Controls\PageHeader.xaml.cs">
       <DependentUpon>PageHeader.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DataModel\Telemetry\SensorTelemetry.cs" />
+    <Compile Include="DataModel\Telemetry\StartupTelemetry.cs" />
+    <Compile Include="DataModel\WeatherShield\CommandProcessors\ChangeDeviceStateCommandProcessor.cs" />
+    <Compile Include="DataModel\WeatherShield\CommandProcessors\ChangeSetPointTempCommandProcessor.cs" />
+    <Compile Include="DataModel\WeatherShield\CommandProcessors\DiagnosticTelemetryCommandProcessor.cs" />
+    <Compile Include="DataModel\WeatherShield\CommandProcessors\StartCommandProcessor.cs" />
+    <Compile Include="DataModel\WeatherShield\CommandProcessors\StopCommandProcessor.cs" />
+    <Compile Include="DataModel\WeatherShield\WeatherShieldDevice.cs" />
+    <Compile Include="Factory\WeatherShieldDeviceFactory.cs" />
     <Compile Include="DataModel\AbstractSensor.cs" />
     <Compile Include="DataModel\AppSettings.cs" />
-    <Compile Include="DataModel\ConnectTheDotsHelper.cs" />
-    <Compile Include="DataModel\ConnectTheDotsMeasure.cs" />
+    <Compile Include="DataModel\Telemetry\SensorTelemetryData.cs" />
     <Compile Include="DataModel\HumiditySensor.cs" />
-    <Compile Include="DataModel\IoTHubHelper.cs" />
     <Compile Include="DataModel\PressureSensor.cs" />
-    <Compile Include="DataModel\SensorBindingConverter.cs" />
     <Compile Include="DataModel\SensorsCollection.cs" />
     <Compile Include="DataModel\TemperatureSensor.cs" />
     <Compile Include="DataModel\WeatherShieldViewModel.cs" />
     <Compile Include="DataModel\WeatherStationConsumer.cs" />
+    <Compile Include="Factory\AllJoynDeviceFactory.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

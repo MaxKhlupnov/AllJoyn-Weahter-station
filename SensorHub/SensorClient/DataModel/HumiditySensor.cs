@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Windows.Devices.AllJoyn;
 using com.mtcmoscow.SensorHub.Humidity;
 using System.Runtime.Serialization;
+using SensorClient.DataModel.Telemetry;
 
 namespace SensorClient.DataModel
 {    
@@ -31,12 +32,12 @@ namespace SensorClient.DataModel
         }
            
 
-        protected async override Task<ConnectTheDotsMeasure> ReadDataAsync()
+        protected async override Task<SensorTelemetryData> ReadDataAsync()
         {
             HumidityGetRHResult RHResult = await this.consumer.GetRHAsync();
-            ConnectTheDotsMeasure measure = new ConnectTheDotsMeasure(this.UniqueName, this.Title, "RH%");
-            measure.value = RHResult.RH;
-            measure.timecreated = DateTimeOffset.Now.ToLocalTime().ToString();            
+            SensorTelemetryData measure = new SensorTelemetryData();
+            measure.UnitOfMeasure = "RH%";
+            measure.Value = RHResult.RH;            
             return measure;
         }
 

@@ -9,6 +9,8 @@ using System.ComponentModel;
 using System.Windows;
 using Windows.ApplicationModel.Core;
 using WinRTXamlToolkit.Debugging;
+using RemoteMonitoring.Devices;
+using SensorClient.DataModel.Telemetry;
 
 namespace SensorClient.DataModel
 {
@@ -24,16 +26,15 @@ namespace SensorClient.DataModel
 
        
         public SensorsCollection<AbstractSensor> Sensors{ get; set; }
+        public List<WeatherShieldDevice> Devices { get; set; }
 
-
-
-        private IoTHubHelper connectHelper = null;
+      //  private IoTHubHelper connectHelper = null;
 
         public WeatherShieldViewModel()
         {
 
             this.Sensors = new SensorsCollection<AbstractSensor>();
-            connectHelper = IoTHubHelper.initIoTHubHelper();
+         //   connectHelper = IoTHubHelper.initIoTHubHelper();
             // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
             mutex = new Mutex(true, mutexId);
 
@@ -48,7 +49,7 @@ namespace SensorClient.DataModel
             StartReadThread();
         }
 
-        private async void SensorStarted(AbstractSensor sensor)
+        private async void SensorStarted(AbstractSensor sensor, IDevice device)
         {
             
                 bool hasMutex = false;
@@ -77,12 +78,12 @@ namespace SensorClient.DataModel
         {
 
             // Create a timer-initiated ThreadPool task to read data from AllJoyn
-            ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+       /*     ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
             {
                 // Notify the UI to do an update.
               
                 var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
-                await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+               await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
                 {
                     bool hasMutex = false;
                     try
@@ -94,8 +95,8 @@ namespace SensorClient.DataModel
                             try {
                                 foreach (AbstractSensor sensor in this.Sensors)
                                 {
-                                    ConnectTheDotsMeasure measure = await sensor.DoMeasure();
-                                    connectHelper.sendMeasure(measure);
+                                    SensorTelemetryData measure = await sensor.DoMeasure();
+                                    //connectHelper.sendMeasure(measure);
                                 }
                             }catch(Exception ex)
                             {                               
@@ -114,7 +115,7 @@ namespace SensorClient.DataModel
             
 
             }, TimeSpan.FromSeconds(10));
-           
+           */
         }
 
     }

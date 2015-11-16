@@ -6,6 +6,7 @@ using com.mtcmoscow.SensorHub.Pressure;
 using System.Runtime.Serialization;
 
 using System.Threading.Tasks;
+using SensorClient.DataModel.Telemetry;
 
 namespace SensorClient.DataModel
 {
@@ -40,27 +41,26 @@ namespace SensorClient.DataModel
         }
 
 
-        protected async override Task<ConnectTheDotsMeasure> ReadDataAsync()
+        protected async override Task<SensorTelemetryData> ReadDataAsync()
         {
-            ConnectTheDotsMeasure measure = new ConnectTheDotsMeasure(this.UniqueName, this.Title, Units.ToString());
-            measure.timecreated = DateTimeOffset.Now.ToLocalTime().ToString();
+            SensorTelemetryData measure = new SensorTelemetryData();            
             
 
             if (this.Units == PressureUnits.kPa || this.Units == PressureUnits.Pa)
             {
                 PressureGetPascalResult pResults = await this.consumer.GetPascalAsync();
-                measure.value = this.Units == PressureUnits.kPa ? pResults.Pascal / 1000 : pResults.Pascal;
+                measure.Value = this.Units == PressureUnits.kPa ? pResults.Pascal / 1000 : pResults.Pascal;
                 return measure;
             }
             else if (this.Units == PressureUnits.InchesOfMercury)
             {
                 PressureGetInchesOfMercuryResult fResult = await this.consumer.GetInchesOfMercuryAsync();
-                measure.value = fResult.InchesOfMercury;
+                measure.Value = fResult.InchesOfMercury;
                 return measure;
             }else if (this.Units == PressureUnits.InchesOfMercury)
             {
                 PressureGetMmOfMercuryResult fResult = await this.consumer.GetMmOfMercuryAsync();
-                measure.value = fResult.MmOfMercury;
+                measure.Value = fResult.MmOfMercury;
                 return measure;
             }
 

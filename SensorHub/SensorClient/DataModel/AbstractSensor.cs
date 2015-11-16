@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
 
+using SensorClient.DataModel.Telemetry;
 
 namespace SensorClient.DataModel
 {
@@ -26,8 +27,8 @@ namespace SensorClient.DataModel
         }
         public string Location { get; set; }
 
-        private ConnectTheDotsMeasure _maxValueMeasure = null;
-        public ConnectTheDotsMeasure MaxValueMeasure {
+        private SensorTelemetryData _maxValueMeasure = null;
+        public SensorTelemetryData MaxValueMeasure {
             get
             {
                 return this._maxValueMeasure;
@@ -38,8 +39,8 @@ namespace SensorClient.DataModel
             }
         }
 
-        private ConnectTheDotsMeasure _minValueMeasure = null;
-        public ConnectTheDotsMeasure MinValueMeasure {
+        private SensorTelemetryData _minValueMeasure = null;
+        public SensorTelemetryData MinValueMeasure {
             get
             {
                 return this._minValueMeasure;
@@ -51,13 +52,13 @@ namespace SensorClient.DataModel
         }
 
 
-        private ConnectTheDotsMeasure _lastMeasure = null;
-        public ConnectTheDotsMeasure LastMeasure {
+        private SensorTelemetryData _lastMeasure = null;
+        public SensorTelemetryData LastMeasure {
             get { return this._lastMeasure; }
             set { SetProperty(ref this._lastMeasure, value); }
         }
 
-        public delegate void SessionLost(ConnectTheDotsMeasure sensor);
+        public delegate void SessionLost(SensorTelemetryData sensor);
         public SessionLost OnSessionLost;
 
         public AbstractSensor(string UniqueName)
@@ -65,21 +66,23 @@ namespace SensorClient.DataModel
             this.UniqueName = UniqueName;
         }
 
-        protected abstract Task<ConnectTheDotsMeasure> ReadDataAsync();
+        protected abstract Task<SensorTelemetryData> ReadDataAsync();
 
-        public async Task<ConnectTheDotsMeasure> DoMeasure()
+        public async Task<SensorTelemetryData> DoMeasure()
         {
             
-             ConnectTheDotsMeasure current = await ReadDataAsync();
-            
+             SensorTelemetryData current = await ReadDataAsync();
+             current.TimeCreated = DateTimeOffset.Now.ToLocalTime().ToString();
+
             // Update max and min values
-            if (MaxValueMeasure == null || MaxValueMeasure.unitofmeasure != current.unitofmeasure || MaxValueMeasure.value < current.value)
+            if (MaxValueMeasure == null || MaxValueMeasure.UnitOfMeasure != current.UnitOfMeasure || MaxValueMeasure.Value < current.Value)
                 this.MaxValueMeasure = current;
 
-            if (MinValueMeasure == null || MinValueMeasure.unitofmeasure != current.unitofmeasure || MinValueMeasure.value > current.value)
+            if (MinValueMeasure == null || MinValueMeasure.UnitOfMeasure != current.UnitOfMeasure || MinValueMeasure.Value > current.Value)
                 this.MinValueMeasure = current;
 
             this.LastMeasure = current;
+            
 
             return current;
         }
