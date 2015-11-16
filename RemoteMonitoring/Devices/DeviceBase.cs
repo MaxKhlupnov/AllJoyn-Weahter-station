@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using RemoteMonitoring.Common.Configurations;
 using RemoteMonitoring.Common.DeviceSchema;
-//using RemoteMonitoring.Common.Factory;
+// using RemoteMonitoring.Common.Factory;
 using RemoteMonitoring.Common.Models;
 using RemoteMonitoring.Common.Models.Commands;
 using RemoteMonitoring.CommandProcessors;
@@ -111,7 +111,7 @@ namespace RemoteMonitoring.Devices
         /// <returns></returns>
         public virtual dynamic GetDeviceInfo()
         {
-            dynamic device = DeviceSchemaHelper.BuildDeviceStructure(DeviceID, true);
+            dynamic device = DeviceSchemaHelper.BuildDeviceStructure(DeviceID, false);
             device.DeviceProperties = DeviceSchemaHelper.GetDeviceProperties(this);
             device.Commands = CommandSchemaHelper.GetSupportedCommands(this);
            // device.Version = SampleDeviceFactory.VERSION_1_0;
