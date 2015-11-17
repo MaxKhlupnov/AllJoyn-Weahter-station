@@ -6,11 +6,17 @@
     /// </summary>
     public class InitialDeviceConfig
     {
+                
+        public string DeviceId { get; set; }
+        public string DeviceName { get; set; }
+        public string Location { get; set; }
+        /// <summary>
+        /// IoT Hub  SAS Auth Key
+        /// </summary>
+        public string Key { get; set; }
         /// <summary>
         /// IoT Hub HostName
         /// </summary>
         public string HostName { get; set; }
-        public string DeviceId { get; set; }
-        public string Key { get; set; }
     }
 }

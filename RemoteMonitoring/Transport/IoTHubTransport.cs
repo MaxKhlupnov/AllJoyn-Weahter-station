@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.IO;
 
-using WinRTXamlToolkit.Debugging;
 
 namespace RemoteMonitoring.Transport
 {
@@ -182,7 +181,7 @@ namespace RemoteMonitoring.Transport
                 throw new ArgumentNullException("command");
             }
 
-            WinRTXamlToolkit.Debugging.Debug.Assert(
+            Debug.Assert(
                 !string.IsNullOrEmpty(command.LockToken),
                 "command.LockToken is a null reference or empty string.");
 
@@ -212,7 +211,7 @@ namespace RemoteMonitoring.Transport
                 throw new ArgumentNullException("command");
             }
 
-            WinRTXamlToolkit.Debugging.Debug.Assert(
+            Debug.Assert(
                 !string.IsNullOrEmpty(command.LockToken),
                 "command.LockToken is a null reference or empty string.");
 
@@ -242,8 +241,7 @@ namespace RemoteMonitoring.Transport
                 throw new ArgumentNullException("command");
             }
 
-            WinRTXamlToolkit.Debugging.Debug.Assert(
-                !string.IsNullOrEmpty(command.LockToken),
+            Debug.Assert(!string.IsNullOrEmpty(command.LockToken),
                 "command.LockToken is a null reference or empty string.");
 
             await AzureRetryHelper.OperationWithBasicRetryAsync(
