@@ -11,6 +11,7 @@ using Windows.ApplicationModel.Core;
 using WinRTXamlToolkit.Debugging;
 using RemoteMonitoring.Devices;
 using SensorClient.DataModel.Telemetry;
+using SensorClient.DataModel.WeatherShield;
 
 namespace SensorClient.DataModel
 {
@@ -52,7 +53,7 @@ namespace SensorClient.DataModel
         private async void SensorStarted(AbstractSensor sensor, IDevice device)
         {
             
-                bool hasMutex = false;
+              /*  bool hasMutex = false;
                 try
                 {
                     await sensor.DoMeasure();
@@ -69,7 +70,7 @@ namespace SensorClient.DataModel
                     {
                         mutex.ReleaseMutex();
                     }
-                }
+                }*/
         }
 
       
@@ -78,7 +79,7 @@ namespace SensorClient.DataModel
         {
 
             // Create a timer-initiated ThreadPool task to read data from AllJoyn
-       /*     ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+          ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
             {
                 // Notify the UI to do an update.
               
@@ -115,7 +116,7 @@ namespace SensorClient.DataModel
             
 
             }, TimeSpan.FromSeconds(10));
-           */
+          
         }
 
     }

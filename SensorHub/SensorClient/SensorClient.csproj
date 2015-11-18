@@ -119,13 +119,16 @@
     <Compile Include="Common\NullableBooleanToBooleanConverter.cs" />
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Common\StringToBrushConverter.cs" />
+    <Compile Include="Common\TraceLogger.cs" />
     <Compile Include="Common\ValueToFontFamilyConverter.cs" />
     <Compile Include="Common\DoubleToStringConverter.cs" />
     <Compile Include="Controls\PageHeader.xaml.cs">
       <DependentUpon>PageHeader.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DataModel\DeviceManager.cs" />
     <Compile Include="DataModel\Telemetry\SensorTelemetry.cs" />
     <Compile Include="DataModel\Telemetry\StartupTelemetry.cs" />
+    <Compile Include="Common\DeviceConfigTableStorage.cs" />
     <Compile Include="DataModel\WeatherShield\CommandProcessors\ChangeDeviceStateCommandProcessor.cs" />
     <Compile Include="DataModel\WeatherShield\CommandProcessors\ChangeSetPointTempCommandProcessor.cs" />
     <Compile Include="DataModel\WeatherShield\CommandProcessors\DiagnosticTelemetryCommandProcessor.cs" />
