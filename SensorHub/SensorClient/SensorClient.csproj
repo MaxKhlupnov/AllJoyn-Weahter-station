@@ -135,7 +135,6 @@
     <Compile Include="DataModel\WeatherShield\CommandProcessors\StartCommandProcessor.cs" />
     <Compile Include="DataModel\WeatherShield\CommandProcessors\StopCommandProcessor.cs" />
     <Compile Include="DataModel\WeatherShield\WeatherShieldDevice.cs" />
-    <Compile Include="Factory\WeatherShieldDeviceFactory.cs" />
     <Compile Include="DataModel\AbstractSensor.cs" />
     <Compile Include="DataModel\AppSettings.cs" />
     <Compile Include="DataModel\Telemetry\SensorTelemetryData.cs" />
@@ -146,6 +145,7 @@
     <Compile Include="DataModel\WeatherShieldViewModel.cs" />
     <Compile Include="DataModel\WeatherStationConsumer.cs" />
     <Compile Include="Factory\AllJoynDeviceFactory.cs" />
+    <Compile Include="DataModel\WeatherShield\WeatherShieldTelemetryFactory.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -211,6 +211,12 @@
     <Folder Include="Navigation\" />
   </ItemGroup>
   <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs, Version=14.0">
+      <Name>Visual C++ 2015 Runtime for Universal Windows Platform Apps</Name>
+    </SDKReference>
+    <SDKReference Include="SQLite.UAP.2015, Version=3.9.2">
+      <Name>SQLite for Universal App Platform</Name>
+    </SDKReference>
     <SDKReference Include="WindowsIoT, Version=10.0.10240.0">
       <Name>Windows IoT Extensions for the UWP</Name>
     </SDKReference>

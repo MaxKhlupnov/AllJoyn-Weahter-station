@@ -35,6 +35,7 @@ namespace SensorClient.DataModel.Telemetry
             this._logger = logger;
             this._deviceId = device.DeviceID;
             this._sensor = sensor;
+            this.TelemetryActive = !string.IsNullOrWhiteSpace(device.HostName) && !string.IsNullOrWhiteSpace(device.PrimaryAuthKey);
         }
 
         public async Task SendEventsAsync(CancellationToken token, Func<object, Task> sendMessageAsync)

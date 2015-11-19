@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 using RemoteMonitoring.Devices;
 using RemoteMonitoring.Logging;
@@ -16,15 +16,19 @@ using SensorClient.DataModel.WeatherShield.CommandProcessors;
 
 namespace SensorClient.DataModel.WeatherShield
 {
-    public class WeatherShieldDevice : DeviceBase, ITelemetryFactory
+    public class WeatherShieldDevice : DeviceBase
     {
-        
-        public SensorsCollection<AbstractSensor> DeviceSensors { get; set; }
 
+        private CancellationToken _token;
+        private Mutex _mutex;
+        public SensorsCollection<AbstractSensor> DeviceSensors { get; set; }       
         public WeatherShieldDevice(ILogger logger, ITransportFactory transportFactory, ITelemetryFactory telemetryFactory, 
-            IConfigurationProvider configurationProvider): base(logger, transportFactory, telemetryFactory, configurationProvider)
+            IConfigurationProvider configurationProvider, CancellationToken token): base(logger, transportFactory, telemetryFactory, 
+                configurationProvider)
         {
             this.DeviceSensors = new SensorsCollection<AbstractSensor>();
+            this._token = token;
+            this._mutex = new Mutex();
         }
 
         /// <summary>
@@ -36,7 +40,7 @@ namespace SensorClient.DataModel.WeatherShield
             var startCommandProcessor = new StartCommandProcessor(this);
             var stopCommandProcessor = new StopCommandProcessor(this);
             var diagnosticTelemetryCommandProcessor = new DiagnosticTelemetryCommandProcessor(this);
-           var changeSetPointTempCommandProcessor = new ChangeSetPointTempCommandProcessor(this);
+            var changeSetPointTempCommandProcessor = new ChangeSetPointTempCommandProcessor(this);
             var changeDeviceStateCommmandProcessor = new ChangeDeviceStateCommandProcessor(this);
 
             pingDeviceProcessor.NextCommandProcessor = startCommandProcessor;
@@ -50,8 +54,7 @@ namespace SensorClient.DataModel.WeatherShield
 
         public void StartTelemetryData()
         {
-            var remoteMonitorTelemetry = (SensorTelemetry)_telemetryController;
-            remoteMonitorTelemetry.TelemetryActive = true;
+            var remoteMonitorTelemetry = (SensorTelemetry)_telemetryController;           
             Logger.LogInfo("Device {0}: Telemetry has started", DeviceID);
         }
 
@@ -91,42 +94,54 @@ namespace SensorClient.DataModel.WeatherShield
         }
 
         public void AddDeviceSensor(AbstractSensor sensor)
-        {
-           var existingSensor = this.DeviceSensors.FirstOrDefault<AbstractSensor>(sn => sn.UniqueName.Equals(sensor.UniqueName));
+        {               
+              this.onRemoveSensor(sensor);
 
-            if (existingSensor != null)
+            bool hasMutex = false;
+            try
             {
-                this.Logger.LogWarning("Overwrite sensor {0} uniquename {1} for deviceid {2}", sensor.Title, sensor.UniqueName, this.DeviceID);
-                existingSensor = sensor;
-            }
-            else
-            {
+                hasMutex = _mutex.WaitOne(1000);
                 this.DeviceSensors.Add(sensor);
+                    sensor.onSensorSessionLost += onRemoveSensor;
+
                 var monitorTelemetry = new SensorTelemetry(this.Logger, this, sensor);
                 this.TelemetryEvents.Add(monitorTelemetry);
+
+                this.Logger.LogWarning("Added sensor {0} uniquename {1} for deviceid {2}", sensor.Title, sensor.UniqueName, this.DeviceID);
             }
+            finally
+            {
+                if (hasMutex)
+                {
+                    _mutex.ReleaseMutex();
+                }
+            }
+
         }
 
-        public void RemoveDeviceSensor(AbstractSensor sensor)
+        private void onRemoveSensor(AbstractSensor sensor)
         {
-            var existingSensor = this.DeviceSensors.FirstOrDefault<AbstractSensor>(sn => sn.UniqueName.Equals(sensor.UniqueName));
+            bool hasMutex = false;
+            try
+            {
+                hasMutex = _mutex.WaitOne(1000);
+                var existingSensor = this.DeviceSensors.FirstOrDefault<AbstractSensor>(sn => sn.UniqueName.Equals(sensor.UniqueName));
             if (existingSensor != null)
             {               
-                this.DeviceSensors.Remove(existingSensor);                
+                this.DeviceSensors.Remove(existingSensor);
+                this.Logger.LogWarning("Removed sensor {0} uniquename {1} for deviceid {2}", sensor.Title, sensor.UniqueName, this.DeviceID);
+                }
+            }
+            finally
+            {
+                if (hasMutex)
+                {
+                    _mutex.ReleaseMutex();
+                }
             }
         }
-        public object PopulateDeviceWithTelemetryEvents()
-        {
-            return PopulateDeviceWithTelemetryEvents(this);
+
+
+
         }
-        public object PopulateDeviceWithTelemetryEvents(IDevice device)
-        {
-
-            var startupTelemetry = new StartupTelemetry(this.Logger, device);
-            device.TelemetryEvents.Add(startupTelemetry);                        
-
-            return startupTelemetry;
-        }
-
-    }
 }

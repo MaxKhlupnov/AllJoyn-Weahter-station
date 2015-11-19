@@ -27,10 +27,11 @@ namespace SensorClient.DataModel
         }
 
         private void Consumer_SessionLost(HumidityConsumer sender, AllJoynSessionLostEventArgs args)
-        {
-            ///TODO: Do something if we lost connection with sensor
+        {            
+            if (this.onSensorSessionLost != null)
+                this.onSensorSessionLost.Invoke(this);
         }
-           
+
 
         protected async override Task<SensorTelemetryData> ReadDataAsync()
         {

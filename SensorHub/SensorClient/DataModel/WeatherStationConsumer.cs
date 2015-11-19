@@ -23,17 +23,17 @@ namespace SensorClient.DataModel
     public class WeatherStationConsumer
     {
         
-        public delegate void HumidityWatcherSessionStarted(HumiditySensor humidity, IDevice device);
+        public delegate void HumidityWatcherSessionStarted(HumiditySensor humidity, dynamic device);
         public HumidityWatcherSessionStarted HumiditySensorSessionStarted;
         HumidityWatcher humidityWatcher = null;
         private AllJoynBusAttachment humidityBusAttachment = new AllJoynBusAttachment();
 
-        public delegate void TemperatureWatcherSessionStarted(TemperatureSensor Temperature, IDevice device);
+        public delegate void TemperatureWatcherSessionStarted(TemperatureSensor Temperature, dynamic device);
         public TemperatureWatcherSessionStarted TemperatureSensorSessionStarted;
         TemperatureWatcher temperatureWatcher = null;
         private AllJoynBusAttachment temperatureBusAttachment = new AllJoynBusAttachment();
 
-        public delegate void PressureWatcherSessionStarted(PressureSensor Pressure, IDevice device);
+        public delegate void PressureWatcherSessionStarted(PressureSensor Pressure, dynamic device);
         public PressureWatcherSessionStarted PerssureSensorSessionStarted;
         PressureWatcher pressureWatcher = null;
         private AllJoynBusAttachment pressureBusAttachment = new AllJoynBusAttachment();
@@ -81,8 +81,8 @@ namespace SensorClient.DataModel
         private async void PressureWatcher_Added(PressureWatcher sender, AllJoynServiceInfo args)
         {            
             PressureJoinSessionResult joinResult = await PressureConsumer.JoinSessionAsync(args, sender);
-            AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, this.pressureBusAttachment, args.SessionPort);
-            var device = SensorClient.Factory.AllJoynDeviceFactory.GetAllJoynDevice(view);
+ //           AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, this.pressureBusAttachment, args.SessionPort);
+ //           var device = SensorClient.Factory.AllJoynDeviceFactory.GetAllJoynDevice(view);
 
             if (joinResult.Status == AllJoynStatus.Ok)
             {
@@ -90,8 +90,8 @@ namespace SensorClient.DataModel
                 
                 var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
                 await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => {
-                    if (PerssureSensorSessionStarted != null)
-                        PerssureSensorSessionStarted.Invoke(newSensor, device);
+  //                  if (PerssureSensorSessionStarted != null)
+ //                       PerssureSensorSessionStarted.Invoke(newSensor, device);
                 });
 
             }
@@ -129,8 +129,8 @@ namespace SensorClient.DataModel
         {
 
          HumidityJoinSessionResult joinResult = await HumidityConsumer.JoinSessionAsync(args, sender);
-         AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, this.humidityBusAttachment, args.SessionPort);
-           var device = SensorClient.Factory.AllJoynDeviceFactory.GetAllJoynDevice(view);
+  //       AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, this.humidityBusAttachment, args.SessionPort);
+  //         var device = SensorClient.Factory.AllJoynDeviceFactory.GetAllJoynDevice(view);
 
             if (joinResult.Status == AllJoynStatus.Ok)
             {
@@ -138,8 +138,8 @@ namespace SensorClient.DataModel
 
                 var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
                 await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => {
-                    if (HumiditySensorSessionStarted != null)
-                        HumiditySensorSessionStarted.Invoke(newSensor, device);
+ //                   if (HumiditySensorSessionStarted != null)
+                     //   HumiditySensorSessionStarted.Invoke(newSensor, device);
                 });
 
             }

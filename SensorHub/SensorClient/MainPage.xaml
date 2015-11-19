@@ -57,7 +57,8 @@
                 </HubSection.Header>
                 <DataTemplate x:DataType="data:WeatherShieldViewModel">
                     <ScrollViewer x:Name="sensorsScroll" VerticalScrollMode="Auto" HorizontalScrollMode="Disabled">
-                        <GridView 
+                        <!--
+                            GridView 
                         x:Name="sensorsGridView"
                         Margin="-13,-4,0,0"
                         AutomationProperties.AutomationId="SensorsGridView"
@@ -80,7 +81,7 @@
                                 <ItemsWrapGrid Orientation="Vertical" />
                             </ItemsPanelTemplate>
                         </GridView.ItemsPanel>
-                    </GridView>
+                     -->
                     </ScrollViewer>
                 </DataTemplate>
             </HubSection>

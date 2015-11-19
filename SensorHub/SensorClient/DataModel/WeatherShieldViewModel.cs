@@ -12,48 +12,85 @@ using WinRTXamlToolkit.Debugging;
 using RemoteMonitoring.Devices;
 using SensorClient.DataModel.Telemetry;
 using SensorClient.DataModel.WeatherShield;
+using SensorClient.Common;
 
 namespace SensorClient.DataModel
 {
-    public class WeatherShieldViewModel 
+    public static class WeatherShieldViewModel 
     {
-
-        private WeatherStationConsumer weatherStationConsumer;
         
-     
 
-        string mutexId = "WeatherStation";
-        Mutex mutex;
+        private static WeatherStationConsumer weatherStationConsumer;
 
-       
-        public SensorsCollection<AbstractSensor> Sensors{ get; set; }
-        public List<WeatherShieldDevice> Devices { get; set; }
+        static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+
+        public static SensorsCollection<AbstractSensor> Sensors{ get; set; }
+
+        public static DeviceManager deviceManager = null;
 
       //  private IoTHubHelper connectHelper = null;
 
-        public WeatherShieldViewModel()
+       
+
+        public static void Init()
+        {
+            if (deviceManager == null)
+            {
+                var logger = new TraceLogger();
+                deviceManager = new DeviceManager(logger, cancellationTokenSource.Token);
+                RunAsync();
+            }
+
+            Sensors = new SensorsCollection<AbstractSensor>();
+
+            weatherStationConsumer = new WeatherStationConsumer();
+            weatherStationConsumer.HumiditySensorSessionStarted += deviceManager.StartDeviceSensorAsync;
+            weatherStationConsumer.TemperatureSensorSessionStarted += deviceManager.StartDeviceSensorAsync;
+            weatherStationConsumer.PerssureSensorSessionStarted += deviceManager.StartDeviceSensorAsync;                                  
+        }
+
+
+        
+
+        private static void RunAsync()
+        {
+           ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+            {
+                while (!cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                DC.Trace("Running");
+                try
+                {
+                    await deviceManager.StartDevicesAsync();
+                    await Task.Delay(TimeSpan.FromMinutes(5), cancellationTokenSource.Token);
+                }
+                catch (TaskCanceledException) { }
+            }
+            }, TimeSpan.FromSeconds(60));
+        }
+
+        /*   
+        private WeatherShieldViewModel()
         {
 
             this.Sensors = new SensorsCollection<AbstractSensor>();
-         //   connectHelper = IoTHubHelper.initIoTHubHelper();
-            // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
-            mutex = new Mutex(true, mutexId);
-
-            // Mutex will be used to ensure only one thread at a time is talking to the shield / isolated storage
-            // mutex = new Mutex(false, mutexId);
-
+                      
+     
             this.weatherStationConsumer = new WeatherStationConsumer();
             this.weatherStationConsumer.HumiditySensorSessionStarted += SensorStarted;
             this.weatherStationConsumer.TemperatureSensorSessionStarted += SensorStarted;
             this.weatherStationConsumer.PerssureSensorSessionStarted += SensorStarted;
 
-            StartReadThread();
+            RunAsync().Wait();           
+            
         }
+
 
         private async void SensorStarted(AbstractSensor sensor, IDevice device)
         {
-            
-              /*  bool hasMutex = false;
+           
+               bool hasMutex = false;
                 try
                 {
                     await sensor.DoMeasure();
@@ -70,54 +107,52 @@ namespace SensorClient.DataModel
                     {
                         mutex.ReleaseMutex();
                     }
-                }*/
+                }
         }
-
-      
-
         private void StartReadThread()
-        {
+             {
 
-            // Create a timer-initiated ThreadPool task to read data from AllJoyn
-          ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
-            {
-                // Notify the UI to do an update.
-              
-                var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
-               await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
-                {
-                    bool hasMutex = false;
-                    try
-                    {
-                        hasMutex = mutex.WaitOne(100);
-                        // We have exlusive access to the mutex so can safely read the transfer file
-                        if (hasMutex)
-                        {
-                            try {
-                                foreach (AbstractSensor sensor in this.Sensors)
-                                {
-                                    SensorTelemetryData measure = await sensor.DoMeasure();
-                                    //connectHelper.sendMeasure(measure);
-                                }
-                            }catch(Exception ex)
-                            {                               
-                                Debug.WriteLine(ex.Message);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (hasMutex)
-                        {
-                            mutex.ReleaseMutex();
-                        }
-                    }
-                });
-            
+                 // Create a timer-initiated ThreadPool task to read data from AllJoyn
+               ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+                 {
+                     // Notify the UI to do an update.
 
-            }, TimeSpan.FromSeconds(10));
-          
-        }
+                     var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
+                    await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+                     {
+                         bool hasMutex = false;
+                         try
+                         {
+                             hasMutex = mutex.WaitOne(100);
+                             // We have exlusive access to the mutex so can safely read the transfer file
+                             if (hasMutex)
+                             {
+                                 try {
+                                     foreach (AbstractSensor sensor in this.Sensors)
+                                     {
+                                         SensorTelemetryData measure = await sensor.DoMeasure();
+                                         //connectHelper.sendMeasure(measure);
+                                     }
+                                 }catch(Exception ex)
+                                 {                               
+                                     Debug.WriteLine(ex.Message);
+                                 }
+                             }
+                         }
+                         finally
+                         {
+                             if (hasMutex)
+                             {
+                                 mutex.ReleaseMutex();
+                             }
+                         }
+                     });
 
+
+                 }, TimeSpan.FromSeconds(10));
+
+             }
+
+         */
     }
 }

@@ -11,7 +11,9 @@ using SensorClient.DataModel.Telemetry;
 namespace SensorClient.DataModel
 {
     public abstract class AbstractSensor : INotifyPropertyChanged
-    {        
+    {
+        public delegate void SensorSessionLost(AbstractSensor sensor);
+        public SensorSessionLost onSensorSessionLost;
         public string UniqueName { get; private set; }
 
         private string _title = string.Empty;
@@ -81,7 +83,8 @@ namespace SensorClient.DataModel
             if (MinValueMeasure == null || MinValueMeasure.UnitOfMeasure != current.UnitOfMeasure || MinValueMeasure.Value > current.Value)
                 this.MinValueMeasure = current;
 
-            this.LastMeasure = current;
+            if (_lastMeasure.Value != current.Value)
+                this.LastMeasure = current;
             
 
             return current;

@@ -37,7 +37,8 @@ namespace SensorClient.DataModel
 
         private void Consumer_SessionLost(PressureConsumer sender, Windows.Devices.AllJoyn.AllJoynSessionLostEventArgs args)
         {
-            ///TODO: Do something if we lost connection with sensor
+            if (this.onSensorSessionLost != null)
+                this.onSensorSessionLost.Invoke(this);
         }
 
 

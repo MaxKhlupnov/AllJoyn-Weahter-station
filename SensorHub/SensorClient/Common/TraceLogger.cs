@@ -1,6 +1,8 @@
 ﻿using WinRTXamlToolkit.Debugging;
+using RemoteMonitoring.Logging;
 
-namespace RemoteMonitoring.Logging
+
+namespace SensorClient.Common
 {
     /// <summary>
     /// Default implementation of ILogger with the System.Diagnostics.Trace 

@@ -27,7 +27,7 @@ namespace SensorClient.Common
             _storageConnectionString = configProvider.GetConfigurationSettingValueOrDefault("device.StorageConnectionString",
                 path);
             conn = new SQLite.Net.SQLiteConnection(new SQLite.Net.Platform.WinRT.SQLitePlatformWinRT(), path);
-            if (conn.GetTableInfo(_deviceTableName) == null)
+            if (conn.GetTableInfo(_deviceTableName).Count == 0)
             {
                 conn.CreateTable<InitialDeviceConfig>();
             }

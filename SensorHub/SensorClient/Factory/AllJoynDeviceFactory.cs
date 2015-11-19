@@ -47,17 +47,19 @@ namespace SensorClient.Factory
             new Location(47.583582, -122.130622)  // 3003 160th Ave SE Bellevue, WA 98008
         };
 
-        public static IDevice GetAllJoynDevice(AllJoynAboutDataView deviceDataView)
+        public static dynamic GetAllJoynDevice(AllJoynAboutDataView deviceDataView)
         {
 
             var device = DeviceSchemaHelper.BuildDeviceStructure(deviceDataView.DeviceId, false);
 
             AssignDeviceProperties(deviceDataView, device);
+            AssignCommands(device);
             device.ObjectType = OBJECT_TYPE_DEVICE_INFO;
             device.Version = VERSION_1_0;
             device.IsSimulatedDevice = IS_SIMULATED_DEVICE;
 
-            AssignCommands(device);
+          
+           // 
 
             return device;
         }
@@ -86,19 +88,20 @@ namespace SensorClient.Factory
         {
             dynamic deviceProperties = DeviceSchemaHelper.GetDeviceProperties(device);
             
-            deviceProperties.HubEnabledState = true;
+            deviceProperties.HubEnabledState = false;
             deviceProperties.Manufacturer = deviceDataView.Manufacturer;
             deviceProperties.ModelNumber = deviceDataView.ModelNumber;
             deviceProperties.SerialNumber = deviceDataView.DeviceId;
             deviceProperties.FirmwareVersion = deviceDataView.SoftwareVersion;
             deviceProperties.Platform = deviceDataView.HardwareVersion;
-            deviceProperties.Processor = "ARM";
+
+            /*deviceProperties.Processor = "ARM";
             deviceProperties.InstalledRAM = "No data";
 
             // Choose a location between the 3 above and set Lat and Long for device properties
             int chosenLocation = GetIntBasedOnString(deviceDataView.DeviceId + "Location", _possibleDeviceLocations.Count);
             deviceProperties.Latitude = _possibleDeviceLocations[chosenLocation].Latitude;
-            deviceProperties.Longitude = _possibleDeviceLocations[chosenLocation].Longitude;
+            deviceProperties.Longitude = _possibleDeviceLocations[chosenLocation].Longitude;*/
         }
 
         private static int GetIntBasedOnString(string input, int maxValueExclusive)
