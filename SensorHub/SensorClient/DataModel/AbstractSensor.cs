@@ -74,6 +74,10 @@ namespace SensorClient.DataModel
         {
             
              SensorTelemetryData current = await ReadDataAsync();
+
+            if (current == null)
+                throw new Exception(String.Format("Sensor {0} id {1} measure return a null", Title, UniqueName));
+
              current.TimeCreated = DateTimeOffset.Now.ToLocalTime().ToString();
 
             // Update max and min values
@@ -83,7 +87,7 @@ namespace SensorClient.DataModel
             if (MinValueMeasure == null || MinValueMeasure.UnitOfMeasure != current.UnitOfMeasure || MinValueMeasure.Value > current.Value)
                 this.MinValueMeasure = current;
 
-            if (_lastMeasure.Value != current.Value)
+            if (_lastMeasure == null || _lastMeasure.Value != current.Value)
                 this.LastMeasure = current;
             
 
