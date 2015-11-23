@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Data;
+using SensorClient.DataModel.Telemetry;
+
 
 namespace SensorClient.DataModel
 {
@@ -11,7 +13,7 @@ namespace SensorClient.DataModel
     {  
             public object Convert(object value, Type targetType, object parameter, string language)
             {
-                ConnectTheDotsMeasure s = value as ConnectTheDotsMeasure;
+                SensorTelemetryData s = value as SensorTelemetryData;
                 return "Hello!";// (MainPage.Current.Scenarios.IndexOf(s) + 1) + ") " + s.Title;
             }
 

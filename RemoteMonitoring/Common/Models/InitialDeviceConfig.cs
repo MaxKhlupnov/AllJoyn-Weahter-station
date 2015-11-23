@@ -11,6 +11,10 @@
         public string DeviceName { get; set; }
         public string Location { get; set; }
         /// <summary>
+        /// IoT Hub Transport type (Http/ AMQP/ MQTT)
+        /// </summary>
+        public string Transport { get; set; }
+        /// <summary>
         /// IoT Hub  SAS Auth Key
         /// </summary>
         public string Key { get; set; }

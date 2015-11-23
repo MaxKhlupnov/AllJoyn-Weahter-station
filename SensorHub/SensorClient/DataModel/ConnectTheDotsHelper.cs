@@ -5,6 +5,7 @@ using Windows.Web.Http;
 using Windows.System.Threading;
 using System.Threading;
 using WinRTXamlToolkit.Debugging;
+using SensorClient.DataModel.Telemetry;
 
 namespace SensorClient.DataModel
 {
@@ -106,7 +107,7 @@ namespace SensorClient.DataModel
                   }
               }*/
 
-        private ConnectTheDotsMeasure ApplySettingsToMeasure(ConnectTheDotsMeasure measure)
+        private SensorTelemetryData ApplySettingsToMeasure(SensorTelemetryData measure)
         {
 
                 measure.displayname = this.localSettings.DisplayName;
@@ -120,7 +121,7 @@ namespace SensorClient.DataModel
         /// Send message to Azure Event Hub using HTTP/REST API
         /// </summary>
         /// <param name="message"></param>
-        public async void sendMeasure(ConnectTheDotsMeasure measure)
+        public async void sendMeasure(SensorTelemetryData measure)
         {
             measure = ApplySettingsToMeasure(measure);
             string message = measure.ToJson();

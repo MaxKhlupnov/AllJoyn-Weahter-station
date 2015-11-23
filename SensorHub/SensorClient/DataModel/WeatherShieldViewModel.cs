@@ -8,20 +8,19 @@ using Windows.System.Threading;
 using System.ComponentModel;
 using System.Windows;
 using Windows.ApplicationModel.Core;
-using WinRTXamlToolkit.Debugging;
-using RemoteMonitoring.Devices;
-using SensorClient.DataModel.Telemetry;
-using SensorClient.DataModel.WeatherShield;
+
 using SensorClient.Common;
+
+using RemoteMonitoring.Logging;
 
 namespace SensorClient.DataModel
 {
     public static class WeatherShieldViewModel 
     {
-        
+        private const int SendTelemetryPeriod_Sec = 60 * 60 * 5; 
 
         private static WeatherStationConsumer weatherStationConsumer;
-
+        private static ILogger logger;
         static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
 
@@ -37,7 +36,7 @@ namespace SensorClient.DataModel
         {
             if (deviceManager == null)
             {
-                var logger = new TraceLogger();
+                logger = new TraceLogger();
                 deviceManager = new DeviceManager(logger, cancellationTokenSource.Token);
                 RunAsync();
             }
@@ -58,16 +57,16 @@ namespace SensorClient.DataModel
            ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
             {
                 while (!cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                DC.Trace("Running");
-                try
                 {
-                    await deviceManager.StartDevicesAsync();
-                    await Task.Delay(TimeSpan.FromMinutes(5), cancellationTokenSource.Token);
-                }
-                catch (TaskCanceledException) { }
+                    logger.LogInfo("Sending devices telemery starts..");
+                    try
+                    {
+                        await deviceManager.StartDevicesAsync();
+                        await Task.Delay(TimeSpan.FromSeconds(SendTelemetryPeriod_Sec), cancellationTokenSource.Token);
+                    }
+                    catch (TaskCanceledException) { }
             }
-            }, TimeSpan.FromSeconds(60));
+            }, TimeSpan.FromSeconds(SendTelemetryPeriod_Sec));
         }
 
         /*   

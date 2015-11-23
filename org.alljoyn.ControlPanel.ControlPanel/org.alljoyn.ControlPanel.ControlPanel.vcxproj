@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{872f1f87-7083-4be4-8e7c-65e936019c19}</ProjectGuid>
+    <ProjectGuid>{4d7f8347-a9dc-4a7f-a74a-b9dff1845033}</ProjectGuid>
     <Keyword>WindowsRuntimeComponent</Keyword>
     <ProjectName>org.alljoyn.ControlPanel.ControlPanel</ProjectName>
     <RootNamespace>org.alljoyn.ControlPanel.ControlPanel</RootNamespace>

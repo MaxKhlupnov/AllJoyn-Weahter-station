@@ -27,8 +27,13 @@ namespace SensorClient.DataModel.Telemetry
         {
             if (!token.IsCancellationRequested && TelemetryActive)
             {
-                _logger.LogInfo("Sending initial data for device {0}", _device.DeviceID);
-                await sendMessageAsync(_device.GetDeviceInfo());
+                _logger.LogInfo("Sending startup telemetry for device {0}", _device.DeviceID);
+                try {
+                    await sendMessageAsync(_device.GetDeviceInfo());
+                }catch(Exception ex)
+                {
+                    _logger.LogError("Error {0} sending startup telemetry for device {1}; ", ex.Message, _device.DeviceID);
+                }
             }
         }
     }

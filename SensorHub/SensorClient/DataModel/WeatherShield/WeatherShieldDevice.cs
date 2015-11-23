@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using System.Threading;
+using Windows.System.Threading;
 
 using RemoteMonitoring.Devices;
 using RemoteMonitoring.Logging;
@@ -21,9 +22,10 @@ namespace SensorClient.DataModel.WeatherShield
 
         private CancellationToken _token;
         private Mutex _mutex;
-        public SensorsCollection<AbstractSensor> DeviceSensors { get; set; }       
-        public WeatherShieldDevice(ILogger logger, ITransportFactory transportFactory, ITelemetryFactory telemetryFactory, 
-            IConfigurationProvider configurationProvider, CancellationToken token): base(logger, transportFactory, telemetryFactory, 
+        public SensorsCollection<AbstractSensor> DeviceSensors { get; set; }
+
+        public WeatherShieldDevice(ILogger logger, ITransportFactory transportFactory, ITelemetryFactory telemetryFactory,
+            IConfigurationProvider configurationProvider, CancellationToken token) : base(logger, transportFactory, telemetryFactory,
                 configurationProvider)
         {
             this.DeviceSensors = new SensorsCollection<AbstractSensor>();
@@ -54,7 +56,7 @@ namespace SensorClient.DataModel.WeatherShield
 
         public void StartTelemetryData()
         {
-            var remoteMonitorTelemetry = (SensorTelemetry)_telemetryController;           
+            var remoteMonitorTelemetry = (SensorTelemetry)_telemetryController;
             Logger.LogInfo("Device {0}: Telemetry has started", DeviceID);
         }
 
@@ -68,7 +70,7 @@ namespace SensorClient.DataModel.WeatherShield
         public void ChangeSetPointTemp(double setPointTemp)
         {
             var remoteMonitorTelemetry = (SensorTelemetry)_telemetryController;
-          //  remoteMonitorTelemetry.ChangeSetPointTemperature(setPointTemp);
+            //  remoteMonitorTelemetry.ChangeSetPointTemperature(setPointTemp);
             Logger.LogInfo("Device {0} temperature changed to {1}", DeviceID, setPointTemp);
         }
 
@@ -90,9 +92,30 @@ namespace SensorClient.DataModel.WeatherShield
 
         public void ChangeSetPointTemperature(double newSetPointTemperature)
         {
-          //  _temperatureGenerator.ShiftSubsequentData(newSetPointTemperature);
+            //  _temperatureGenerator.ShiftSubsequentData(newSetPointTemperature);
         }
 
+        public async Task StartReadSensorAsync(CancellationToken token) {
+
+            bool hasMutex = false;
+            try
+            {
+                hasMutex = _mutex.WaitOne(1000);
+                foreach (AbstractSensor sensor in this.DeviceSensors)
+                {
+                  SensorTelemetryData data = await sensor.DoMeasure();
+                  this.Logger.LogInfo("Sensor {0} sucessfully measure:{1} value: {2}", sensor.Title, data.MeasureName, data.Value);
+                }
+            }
+            finally
+            {
+                if (hasMutex)
+                {
+                    _mutex.ReleaseMutex();
+                }
+            }
+
+        }
         public void AddDeviceSensor(AbstractSensor sensor)
         {               
               this.onRemoveSensor(sensor);
@@ -100,6 +123,7 @@ namespace SensorClient.DataModel.WeatherShield
             bool hasMutex = false;
             try
             {
+                this.Logger.LogInfo("Adding sensor {0} uniquename {1} for deviceid {2}", sensor.Title, sensor.UniqueName, this.DeviceID);
                 hasMutex = _mutex.WaitOne(1000);
                 this.DeviceSensors.Add(sensor);
                     sensor.onSensorSessionLost += onRemoveSensor;
@@ -107,7 +131,7 @@ namespace SensorClient.DataModel.WeatherShield
                 var monitorTelemetry = new SensorTelemetry(this.Logger, this, sensor);
                 this.TelemetryEvents.Add(monitorTelemetry);
 
-                this.Logger.LogWarning("Added sensor {0} uniquename {1} for deviceid {2}", sensor.Title, sensor.UniqueName, this.DeviceID);
+                this.Logger.LogInfo("Sensor {0} addedd sucessfully", sensor.Title);
             }
             finally
             {

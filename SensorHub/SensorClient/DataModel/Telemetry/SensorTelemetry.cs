@@ -41,19 +41,27 @@ namespace SensorClient.DataModel.Telemetry
         public async Task SendEventsAsync(CancellationToken token, Func<object, Task> sendMessageAsync)
         {
             // Read data from sensor
-            var monitorData = await this._sensor.DoMeasure();
-            monitorData.DeviceId = this._deviceId;
+            if (this._sensor == null || this._sensor.LastMeasure == null || !this.TelemetryActive)
+                return;
 
+            var monitorData = this._sensor.LastMeasure;
+            monitorData.DeviceId = this._deviceId;
+            this._logger.LogInfo("Sending telemetry for device {0}; _sensor {1}; value: {2}", new object[] { _deviceId, _sensor.Title, monitorData.Value});
             while (!token.IsCancellationRequested)
             {
                 if (TelemetryActive)
                 {
-                    await sendMessageAsync(monitorData);
+                    try {
+                        await sendMessageAsync(monitorData);
+                    }catch(Exception ex)
+                    {
+                        this._logger.LogError("Error {0} sending telemetry for device {1}; _sensor {2}; value: {3}", 
+                            new object[] {ex.Message, _deviceId, _sensor.Title, monitorData.Value });
+                    }
                 }
                
             }
-
-             await Task.Delay(TimeSpan.FromSeconds(REPORT_FREQUENCY_IN_SECONDS), token);
+            
         }
     }
 }

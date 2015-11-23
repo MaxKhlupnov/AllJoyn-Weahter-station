@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.System.Threading;
 
 using RemoteMonitoring.Logging;
 using RemoteMonitoring.Common.Configurations;
@@ -32,6 +33,8 @@ namespace SensorClient.DataModel
 
         private readonly Dictionary<string, CancellationTokenSource> _cancellationTokens;
 
+        private const int QuerySensorsPeriod_Sec = 25;
+
         // change this to inject a different logger
         private readonly ILogger _logger;
         private readonly ITransportFactory _transportFactory;
@@ -57,9 +60,48 @@ namespace SensorClient.DataModel
             _transportFactory = new IotHubTransportFactory(serializer, _logger, _configProvider);
 
             _telemetryFactory = new WeatherShieldTelemetryFactory(_logger);
+
+            RunReadSensorsThread();
         }
-     
-               
+
+        private void RunReadSensorsThread()
+        {
+            ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+            {
+                while (!_token.IsCancellationRequested)
+                {
+                    
+                    bool hasMutex = false;
+                    if (_devices != null && _devices.Count > 0)
+                    try
+                        {
+                            hasMutex = _mutex.WaitOne(QuerySensorsPeriod_Sec * 1000);
+                            var StartReadSensorTasks = new List<Task>();
+                            // await deviceManager.StartDevicesAsync();
+                            foreach (WeatherShieldDevice device in _devices.Values)
+                            {
+                                var deviceCancellationToken = _cancellationTokens[device.DeviceID];
+                                this._logger.LogInfo("Reading sensors measures for device {0}", device.DeviceID);
+                                StartReadSensorTasks.Add(device.StartReadSensorAsync(deviceCancellationToken.Token));
+                            }
+                            await Task.WhenAll(StartReadSensorTasks);
+                        }                     
+                        catch (Exception ex)
+                        {
+                            this._logger.LogError("Error sending sensors telemetry", new object[] { ex.Message });
+                        }
+                        finally
+                        {
+                            if (hasMutex)
+                            {
+                                _mutex.ReleaseMutex();
+                            }
+                    }
+                    await Task.Delay(TimeSpan.FromSeconds(QuerySensorsPeriod_Sec), _token);
+                }                
+            }, TimeSpan.FromSeconds(QuerySensorsPeriod_Sec));
+        }
+
         public async void StartDeviceSensorAsync(AbstractSensor sensor, dynamic device)
         {
             if (device == null)
@@ -72,7 +114,7 @@ namespace SensorClient.DataModel
                 // check if device already exists
                 string deviceID = DeviceSchemaHelper.GetDeviceID(device);
                 WeatherShieldDevice existingDevice;
-                if (_devices.ContainsKey(deviceID))
+                if (!_devices.ContainsKey(deviceID))
                 {
                     
                     var deviceCancellationToken = new CancellationTokenSource();
@@ -133,10 +175,11 @@ namespace SensorClient.DataModel
                 bool hasMutex = false;
                 try
                 {
-                    hasMutex = _mutex.WaitOne(5000);
+                    hasMutex = _mutex.WaitOne(QuerySensorsPeriod_Sec * 1000);
                     foreach (var device in _devices.Values)
                     {
                         var deviceCancellationToken = _cancellationTokens[device.DeviceID];
+                        this._logger.LogInfo("Sending telemetry for device {0}", device.DeviceID);
                         startDeviceTasks.Add(device.StartAsync(deviceCancellationToken.Token));
                     }
 
