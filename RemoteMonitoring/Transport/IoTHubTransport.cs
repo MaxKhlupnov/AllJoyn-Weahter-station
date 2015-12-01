@@ -40,8 +40,8 @@ namespace RemoteMonitoring.Transport
             {
                 throw new ArgumentException("DeviceID value cannot be missing, null, or whitespace");
             }
-
-            _deviceClient = DeviceClient.CreateFromConnectionString(GetConnectionString());
+            string connStr = GetConnectionString();
+            _deviceClient = DeviceClient.CreateFromConnectionString(connStr, TransportType.Http1);
         }
 
         public async Task CloseAsync()
