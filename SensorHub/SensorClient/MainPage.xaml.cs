@@ -32,18 +32,15 @@ namespace SensorClient
     /// </summary>
     public sealed partial class MainPage : Page
     {
-
         
-
-        public DeviceManager DeviceManager {    get; set;}
         public Popup DebugPopup { get; set; }
 
 
         public MainPage()
         {
             this.InitializeComponent();
-            WeatherShieldViewModel.Init();
-            this.DataContext = WeatherShieldViewModel.deviceManager;
+          
+            this.DataContext = new WeatherShieldViewModel();
 
             ((SensorClient.App)Application.Current).OnBridgeInitialized += OnBridgeInitialized;
             this.Loaded += MainPage_Loaded;            

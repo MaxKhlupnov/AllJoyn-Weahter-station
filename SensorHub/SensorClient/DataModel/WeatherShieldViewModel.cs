@@ -15,24 +15,24 @@ using RemoteMonitoring.Logging;
 
 namespace SensorClient.DataModel
 {
-    public static class WeatherShieldViewModel 
+    public class WeatherShieldViewModel 
     {
-        private const int SendTelemetryPeriod_Sec = 60 * 60 * 5; 
+        private const int SendTelemetryPeriod_Sec = 5; //60 * 60 * 5; 
 
         private static WeatherStationConsumer weatherStationConsumer;
         private static ILogger logger;
         static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
 
-        public static SensorsCollection<AbstractSensor> Sensors{ get; set; }
+        public SensorsCollection<AbstractSensor> Sensors{ get; set; }
 
-        public static DeviceManager deviceManager = null;
+        public DeviceManager deviceManager = null;
 
-      //  private IoTHubHelper connectHelper = null;
+        //  private IoTHubHelper connectHelper = null;
 
-       
+        private static Mutex mutex = new Mutex(true, "temporaryUIMutex");
 
-        public static void Init()
+        public WeatherShieldViewModel()
         {
             if (deviceManager == null)
             {
@@ -46,47 +46,66 @@ namespace SensorClient.DataModel
             weatherStationConsumer = new WeatherStationConsumer();
             weatherStationConsumer.HumiditySensorSessionStarted += deviceManager.StartDeviceSensorAsync;
             weatherStationConsumer.TemperatureSensorSessionStarted += deviceManager.StartDeviceSensorAsync;
-            weatherStationConsumer.PerssureSensorSessionStarted += deviceManager.StartDeviceSensorAsync;                                  
+            weatherStationConsumer.PerssureSensorSessionStarted += deviceManager.StartDeviceSensorAsync;
+
+            weatherStationConsumer.HumiditySensorSessionStarted += SensorStarted;
+            weatherStationConsumer.TemperatureSensorSessionStarted += SensorStarted;
+            weatherStationConsumer.PerssureSensorSessionStarted += SensorStarted;
+
         }
 
 
         
 
-        private static void RunAsync()
+        private void RunAsync()
         {
            ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
             {
                 while (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
+
                     logger.LogInfo("Sending devices telemery starts..");
                     try
                     {
                         await deviceManager.StartDevicesAsync();
                         await Task.Delay(TimeSpan.FromSeconds(SendTelemetryPeriod_Sec), cancellationTokenSource.Token);
+
+
+                        ////------
+                        bool hasMutex = false;
+                        try
+                        {
+                        
+                            hasMutex = mutex.WaitOne(1000);
+                            if (hasMutex)
+                            {
+                                foreach (AbstractSensor sensor in Sensors)
+                                {
+                                    await sensor.DoMeasure();
+                                    //connectHelper.sendMeasure(measure);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            if (hasMutex)
+                            {
+                                mutex.ReleaseMutex();
+                            }
+                        }
+                       
+ 
+                        
                     }
                     catch (TaskCanceledException) { }
             }
             }, TimeSpan.FromSeconds(SendTelemetryPeriod_Sec));
         }
 
-        /*   
-        private WeatherShieldViewModel()
-        {
-
-            this.Sensors = new SensorsCollection<AbstractSensor>();
-                      
      
-            this.weatherStationConsumer = new WeatherStationConsumer();
-            this.weatherStationConsumer.HumiditySensorSessionStarted += SensorStarted;
-            this.weatherStationConsumer.TemperatureSensorSessionStarted += SensorStarted;
-            this.weatherStationConsumer.PerssureSensorSessionStarted += SensorStarted;
-
-            RunAsync().Wait();           
-            
-        }
 
 
-        private async void SensorStarted(AbstractSensor sensor, IDevice device)
+        private async void SensorStarted(AbstractSensor sensor, dynamic device)
         {
            
                bool hasMutex = false;
@@ -96,8 +115,7 @@ namespace SensorClient.DataModel
                     hasMutex = mutex.WaitOne(1000);
                     if (hasMutex)
                     {
-                        this.Sensors.Add(sensor);
-                        DC.Trace("Addedd sensor {0} with id {1}", new object[] { sensor.Title, sensor.UniqueName });
+                        Sensors.Add(sensor);
                     }
                 }
                 finally
@@ -108,50 +126,6 @@ namespace SensorClient.DataModel
                     }
                 }
         }
-        private void StartReadThread()
-             {
-
-                 // Create a timer-initiated ThreadPool task to read data from AllJoyn
-               ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
-                 {
-                     // Notify the UI to do an update.
-
-                     var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
-                    await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
-                     {
-                         bool hasMutex = false;
-                         try
-                         {
-                             hasMutex = mutex.WaitOne(100);
-                             // We have exlusive access to the mutex so can safely read the transfer file
-                             if (hasMutex)
-                             {
-                                 try {
-                                     foreach (AbstractSensor sensor in this.Sensors)
-                                     {
-                                         SensorTelemetryData measure = await sensor.DoMeasure();
-                                         //connectHelper.sendMeasure(measure);
-                                     }
-                                 }catch(Exception ex)
-                                 {                               
-                                     Debug.WriteLine(ex.Message);
-                                 }
-                             }
-                         }
-                         finally
-                         {
-                             if (hasMutex)
-                             {
-                                 mutex.ReleaseMutex();
-                             }
-                         }
-                     });
-
-
-                 }, TimeSpan.FromSeconds(10));
-
-             }
-
-         */
+  
     }
 }

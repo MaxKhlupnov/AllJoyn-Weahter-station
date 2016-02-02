@@ -57,8 +57,7 @@
                 </HubSection.Header>
                 <DataTemplate x:DataType="data:WeatherShieldViewModel">
                     <ScrollViewer x:Name="sensorsScroll" VerticalScrollMode="Auto" HorizontalScrollMode="Disabled">
-                        <!--
-                            GridView 
+                        <GridView 
                         x:Name="sensorsGridView"
                         Margin="-13,-4,0,0"
                         AutomationProperties.AutomationId="SensorsGridView"
@@ -71,17 +70,17 @@
                         IsSwipeEnabled="False"
                         IsItemClickEnabled="True"
                         ItemClick="SensorsView_ItemClick">
-                        <GridView.Transitions>
-                            <TransitionCollection>
-                                <EntranceThemeTransition/>
-                            </TransitionCollection>
-                        </GridView.Transitions>
-                        <GridView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <ItemsWrapGrid Orientation="Vertical" />
-                            </ItemsPanelTemplate>
-                        </GridView.ItemsPanel>
-                     -->
+                            <GridView.Transitions>
+                                <TransitionCollection>
+                                    <EntranceThemeTransition/>
+                                </TransitionCollection>
+                            </GridView.Transitions>
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid Orientation="Vertical" />
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
+                        </GridView>
                     </ScrollViewer>
                 </DataTemplate>
             </HubSection>

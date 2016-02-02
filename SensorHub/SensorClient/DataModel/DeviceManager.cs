@@ -44,6 +44,7 @@ namespace SensorClient.DataModel
 
         private readonly Dictionary<string, IDevice> _devices;
 
+
         public DeviceManager(ILogger logger, CancellationToken token)
         {
             _logger = logger;
@@ -52,6 +53,8 @@ namespace SensorClient.DataModel
             _mutex = new Mutex(true, mutexId);
             _cancellationTokens = new Dictionary<string, CancellationTokenSource>();
             _devices = new Dictionary<string, IDevice >();
+
+           //   Sensors = new SensorsCollection<AbstractSensor>(); //We may need leave only one sensor collection
 
             _configProvider = new ConfigurationProvider();
             _deviceConfiguration = new DeviceConfigTableStorage(_configProvider);
@@ -111,6 +114,8 @@ namespace SensorClient.DataModel
             try
             {
                 hasMutex = _mutex.WaitOne(5000);
+                ;
+
                 // check if device already exists
                 string deviceID = DeviceSchemaHelper.GetDeviceID(device);
                 WeatherShieldDevice existingDevice;
@@ -127,8 +132,9 @@ namespace SensorClient.DataModel
                     InitialDeviceConfig config = await this._deviceConfiguration.GetDeviceAsync(deviceID);
                     if (config == null) {
                         config = new InitialDeviceConfig();
-                        config.Key = string.Empty;
-                        config.HostName = string.Empty;                        
+                        ///HostName=MtcDataCenter.azure-devices.net;DeviceId=makhluDev;SharedAccessKey=Q3e1wSyrkpspcR06m11bNw==
+                        config.Key = @"Q3e1wSyrkpspcR06m11bNw==";//string.Empty;
+                        config.HostName = @"MtcDataCenter.azure-devices.net";//string.Empty;                        
                     }
                     existingDevice.Init(config, device);
                     
