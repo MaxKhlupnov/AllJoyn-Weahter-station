@@ -38,6 +38,8 @@ using namespace Windows::Foundation;
 using namespace Windows::System::Profile;
 using namespace Windows::Storage::Streams;
 
+using namespace Windows::Security::ExchangeActiveSyncProvisioning;
+
 // GPIO Device
 String^ deviceName = "WeatherStation";
 String^ vendorName = "Max Khlupnov";
@@ -107,27 +109,28 @@ namespace AdapterLib
 		Windows::ApplicationModel::PackageVersion versionFromPkg = packageId->Version;
 		this->cancellationTokenSource = cancellation_token_source();
 		
-		this->LoadDeviceDesc();
-		this->vendor = L"MTC Moscow";
+		/*this->LoadDeviceDesc();*/
+		this->systemManufacturer = L"MTC Moscow";
 		this->adapterName = L"SensorHub";
 		// the adapter prefix must be something like "com.mycompany" (only alpha num and dots)
 		// it is used by the Device System Bridge as root string for all services and interfaces it exposes
-		this->exposedAdapterPrefix = L"com." + DsbCommon::ToLower(this->vendor->Data());
+		this->exposedAdapterPrefix = L"com." + DsbCommon::ToLower(this->systemManufacturer->Data());
 		this->exposedApplicationGuid = Platform::Guid(APPLICATION_GUID);
 
 		if (nullptr != package &&
 			nullptr != packageId)
 		{
 			this->exposedApplicationName = packageId->Name;
-			this->version = versionFromPkg.Major.ToString() + L"." + versionFromPkg.Minor.ToString() + L"." + versionFromPkg.Revision.ToString() + L"." + versionFromPkg.Build.ToString();
+			this->softwareVersion = versionFromPkg.Major.ToString() + L"." + versionFromPkg.Minor.ToString() 
+									+ L"." + versionFromPkg.Revision.ToString() + L"." + versionFromPkg.Build.ToString();
 		}
 		else
 		{
 			this->exposedApplicationName = L"DeviceSystemBridge";
-			this->version = L"0.0.0.0";
+			this->softwareVersion = L"0.0.0.0";
 		}
 
-		DsbBridge::LogInfo(L"Starting " + this->exposedApplicationName + " version " + this->version);
+		DsbBridge::LogInfo(L"Starting " + this->exposedApplicationName + " version " + this->softwareVersion);
 
 		DsbBridge::LogInfo(L"Initializing GPIO controller");
 		try {
@@ -300,12 +303,27 @@ namespace AdapterLib
 
 		// GPIO Device Descriptor: Static data for our device
 		DEVICE_DESCRIPTOR gpioDeviceDesc;		
-		gpioDeviceDesc.Name = deviceName;
-		gpioDeviceDesc.VendorName = vendorName;
-		gpioDeviceDesc.Model = modelName;
-		gpioDeviceDesc.Version = version;
-		gpioDeviceDesc.SerialNumer = serialNumber;
-		gpioDeviceDesc.Description = description;
+		try
+		{
+
+			EasClientDeviceInformation^ CurrentDeviceInfor = ref new EasClientDeviceInformation();
+			
+			gpioDeviceDesc.FriendlyName = CurrentDeviceInfor->FriendlyName;
+			gpioDeviceDesc.Id = CurrentDeviceInfor->Id.ToString();
+			gpioDeviceDesc.OperatingSystem = CurrentDeviceInfor->OperatingSystem;
+			gpioDeviceDesc.SoftwareVersion = L"1.1.1.0";// CurrentDeviceInfor->SystemFirmwareVersion;
+			gpioDeviceDesc.HardwareVersion = L"2.2.2.0";//CurrentDeviceInfor->SystemHardwareVersion;
+			gpioDeviceDesc.SystemManufacturer = CurrentDeviceInfor->SystemManufacturer;;
+			gpioDeviceDesc.SystemProductName = CurrentDeviceInfor->SystemProductName;
+			gpioDeviceDesc.SystemSku = CurrentDeviceInfor->SystemSku;
+
+			description = CurrentDeviceInfor->SystemProductName;
+		}
+		catch (Platform::Exception^ ex)
+		{
+			DsbBridge::LogError(L"Error loading device information", ex);
+		}
+
 		// Finally, put it all into a new device
 		AdapterDevice^ gpioDevice = ref new AdapterDevice(&gpioDeviceDesc);
 		gpioDevice->Initialize();
@@ -319,7 +337,7 @@ namespace AdapterLib
 
 		return ERROR_SUCCESS;
 	}
-
+	
 
 
 	uint32
@@ -754,10 +772,10 @@ namespace AdapterLib
 		// Calculate using US Standard Atmosphere 1976 (NASA)
 		return (44330.77 * (1 - std::pow((Pascal / 101326), 0.1902632)) /*+ OFF_H*/); // OFF_H (disabled) is the user offset
 	}
-
+	/*
 	void Adapter::LoadDeviceDesc()
 	{
-					
+											
 			HttpClient^ httpClient = Helpers::CreateHttpClient();
 			Platform::String^ output = ref new Platform::String();
 			Uri^ uri = ref new Uri(L"http://localhost:8080/api/os/info");
@@ -807,6 +825,6 @@ namespace AdapterLib
 		
 			jsonVal = jsonResponse->GetNamedValue(L"SqmMachineId");
 			serialNumber = jsonVal->GetString();		
-	}
+	}*/
 
 } // namespace AdapterLib

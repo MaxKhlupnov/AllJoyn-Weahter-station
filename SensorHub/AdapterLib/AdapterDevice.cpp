@@ -183,23 +183,25 @@ namespace AdapterLib
     AdapterDevice::AdapterDevice(
 		const DEVICE_DESCRIPTOR* DeviceDescPtr 
 		)
-        : name(DeviceDescPtr->Name)
-        , vendor(DeviceDescPtr->VendorName)
-        , model(DeviceDescPtr->Model)
-        , firmwareVersion(DeviceDescPtr->Version)
-        , serialNumber(DeviceDescPtr->SerialNumer)
-        , description(DeviceDescPtr->Description)
+        : name(DeviceDescPtr->FriendlyName)
+		, id(DeviceDescPtr->Id)		
+		, systemHardwareVersion(DeviceDescPtr->HardwareVersion)
+		, systemSoftwareVersion(DeviceDescPtr->SoftwareVersion)
+        , systemManufacturer(DeviceDescPtr->SystemManufacturer)
+        , systemProductName(DeviceDescPtr->SystemProductName)        
+        , systemSku(DeviceDescPtr->SystemSku)
     {
     }
 
 
     AdapterDevice::AdapterDevice(const AdapterDevice^ Other)
         : name(Other->name)
-        , vendor(Other->vendor)
-        , model(Other->model)
-        , firmwareVersion(Other->firmwareVersion)
-        , serialNumber(Other->serialNumber)
-        , description(Other->description)
+		, id(Other->id)		
+		, systemHardwareVersion(Other->systemHardwareVersion)
+		, systemSoftwareVersion(Other->systemSoftwareVersion)
+		, systemManufacturer(Other->systemManufacturer)
+		, systemProductName(Other->systemProductName)
+		, systemSku(Other->systemSku)
     {
     }
 	bool AdapterDevice::ValidHtdu21dCyclicRedundancyCheck(uint16 data_, byte crc_)

@@ -233,23 +233,30 @@ namespace AdapterLib
     //
     struct DEVICE_DESCRIPTOR
     {
-        // The device name
-        Platform::String^           Name;
+        //  friendly name of the local device.
+        Platform::String^           FriendlyName;
 
-        // The device manufacturer name
-        Platform::String^           VendorName;
+        // identifier of the local device.
+        Platform::String^           Id;
 
-        // The device model name
-        Platform::String^           Model;
+        // operating system of the local device
+        Platform::String^           OperatingSystem;
 
-        // The device version number
-        Platform::String^           Version;
+        // system firmware version of the local device
+        Platform::String^           HardwareVersion;
 
-        // The device serial number
-        Platform::String^           SerialNumer;
+        // hardware version of the local device
+        Platform::String^           SoftwareVersion;
 
-        // The specific device description
-        Platform::String^           Description;
+        // system manufacturer of the local device
+        Platform::String^           SystemManufacturer;
+
+		// system product name of the local device.
+		Platform::String^			SystemProductName;
+
+		//system SKU of the local device
+		Platform::String^			SystemSku;
+
     };
 
 
@@ -272,34 +279,35 @@ namespace AdapterLib
         //
         // Device information
         //
-        virtual property Platform::String^ Vendor
+        virtual property Platform::String^ SystemManufacturer
         {
-            Platform::String^ get() { return this->vendor; }
+            Platform::String^ get() { return this->systemManufacturer; }
         }
         virtual property Platform::String^ Model
         {
-            Platform::String^ get() { return this->model; }
+            Platform::String^ get() { return this->friendlyName; }
         }
-        virtual property Platform::String^ Version
+        virtual property Platform::String^ SoftwareVersion
         {
-            Platform::String^ get() { return this->firmwareVersion; }
+            Platform::String^ get() { return this->systemSoftwareVersion; }
         }
-        virtual property Platform::String^ FirmwareVersion
+        virtual property Platform::String^ HardwareVersion
         {
-            Platform::String^ get() { return this->firmwareVersion; }
+            Platform::String^ get() { return this->systemHardwareVersion; }
         }
         virtual property Platform::String^ ID
         {
-            Platform::String^ get() { return this->serialNumber; }
+            Platform::String^ get() { return this->id; }
         }
         virtual property Platform::String^ SerialNumber
         {
-            Platform::String^ get() { return this->serialNumber; }
+            Platform::String^ get() { return this->systemSku; }
         }
         virtual property Platform::String^ Description
         {
-            Platform::String^ get() { return this->description; }
+            Platform::String^ get() { return this->systemProductName; }
         }
+
 
         // Device properties
         virtual property BridgeRT::IAdapterPropertyVector^ Properties
@@ -370,12 +378,14 @@ namespace AdapterLib
         // Generic
         Platform::String^ name;
         
-        // Device information
-        Platform::String^ vendor;
-        Platform::String^ model;
-        Platform::String^ firmwareVersion;
-        Platform::String^ serialNumber;
-        Platform::String^ description;
+        // Device information		
+		Platform::String^           friendlyName; //  friendly name of the local device.
+		Platform::String^           id;		// identifier of the local device.				
+		Platform::String^           systemSoftwareVersion; // system software version of the local device		
+		Platform::String^           systemHardwareVersion; // hardware version of the local device		
+		Platform::String^           systemManufacturer; // system manufacturer of the local device		
+		Platform::String^			systemProductName; // system product name of the local device.		
+		Platform::String^			systemSku; //system SKU of the local device
 
         // Device properties 
         std::vector<BridgeRT::IAdapterProperty^> properties;

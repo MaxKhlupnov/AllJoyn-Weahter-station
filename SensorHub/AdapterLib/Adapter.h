@@ -36,18 +36,22 @@ namespace AdapterLib
         //
         // Adapter information
         //
-        virtual property Platform::String^ Vendor
+        virtual property Platform::String^ SystemManufacturer
         {
-            Platform::String^ get() { return this->vendor; }
+            Platform::String^ get() { return this->systemManufacturer; }
         }
         virtual property Platform::String^ AdapterName
         {
             Platform::String^ get() { return this->adapterName; }
         }
-        virtual property Platform::String^ Version
+        virtual property Platform::String^ SoftwareVersion
         {
-            Platform::String^ get() { return this->version; }
+            Platform::String^ get() { return this->softwareVersion; }
         }
+		virtual property Platform::String^ HardwareVersion
+		{
+			Platform::String^ get() { return this->hardwareVersion; }
+		}
         virtual property Platform::String^ ExposedAdapterPrefix
         {
             Platform::String^ get() { return this->exposedAdapterPrefix; }
@@ -191,12 +195,13 @@ namespace AdapterLib
 		double	Pascal2Altitude(double Pascal);
 		bool	ValidHtdu21dCyclicRedundancyCheck(uint32 data_, byte crc_);		
 		Platform::String^ FormatInterfaceHint(Platform::String^ propertyName);
-		void Adapter::LoadDeviceDesc();
-		void ParseJsonResponse(Platform::String ^ input);
+		/*void Adapter::LoadDeviceDesc();
+		void ParseJsonResponse(Platform::String ^ input);*/
     
-        Platform::String^ vendor;
+        Platform::String^ systemManufacturer;
         Platform::String^ adapterName;
-        Platform::String^ version;
+        Platform::String^ softwareVersion;
+		Platform::String^ hardwareVersion;
         // the prefix for AllJoyn service should be something like
         // com.mycompany (only alpha num and dots) and is used by the Device System Bridge
         // as root string for all services and interfaces it exposes
