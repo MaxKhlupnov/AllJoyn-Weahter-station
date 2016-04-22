@@ -17,26 +17,32 @@ namespace RemoteMonitoring.Common.DeviceSchema
         /// <returns>ObjectType value, or empty string if not found</returns>
         public static string GetObjectType(dynamic eventData)
         {
-            if (eventData == null)
+            try {
+                if (eventData == null)
+                {
+                    throw new ArgumentNullException("eventData");
+                }
+
+                IEnumerable<string> members = Dynamic.GetMemberNames(eventData);
+
+                if (!members.Any(m => m == "ObjectType"))
+                {
+                    return "";
+                }
+
+                dynamic objectType = eventData.ObjectType;
+
+                if (objectType == null)
+                {
+                    return "";
+                }
+
+                return objectType.ToString();
+            }catch(Exception ex)
             {
-                throw new ArgumentNullException("eventData");
+                String exs = ex.ToString();
+                return null;
             }
-
-            IEnumerable<string> members = Dynamic.GetMemberNames(eventData);
-
-            if (!members.Any(m => m == "ObjectType"))
-            {
-                return "";
-            }
-
-            dynamic objectType = eventData.ObjectType;
-
-            if (objectType == null)
-            {
-                return "";
-            }
-
-            return objectType.ToString();
         }
     }
 }

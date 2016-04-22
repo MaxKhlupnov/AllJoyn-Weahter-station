@@ -39,6 +39,8 @@ using namespace Windows::System::Profile;
 using namespace Windows::Storage::Streams;
 
 using namespace Windows::Security::ExchangeActiveSyncProvisioning;
+using namespace Windows::System::Profile;
+
 
 // GPIO Device
 String^ deviceName = "WeatherStation";
@@ -309,10 +311,10 @@ namespace AdapterLib
 			EasClientDeviceInformation^ CurrentDeviceInfor = ref new EasClientDeviceInformation();
 			
 			gpioDeviceDesc.FriendlyName = CurrentDeviceInfor->FriendlyName;
-			gpioDeviceDesc.Id = CurrentDeviceInfor->Id.ToString();
-			gpioDeviceDesc.OperatingSystem = CurrentDeviceInfor->OperatingSystem;
-			gpioDeviceDesc.SoftwareVersion = L"1.1.1.0";// CurrentDeviceInfor->SystemFirmwareVersion;
-			gpioDeviceDesc.HardwareVersion = L"2.2.2.0";//CurrentDeviceInfor->SystemHardwareVersion;
+			gpioDeviceDesc.Id = CurrentDeviceInfor->Id.ToString();			
+			gpioDeviceDesc.SoftwareVersion = AnalyticsInfo::VersionInfo->DeviceFamilyVersion;
+	
+			gpioDeviceDesc.HardwareVersion = CurrentDeviceInfor->OperatingSystem;
 			gpioDeviceDesc.SystemManufacturer = CurrentDeviceInfor->SystemManufacturer;;
 			gpioDeviceDesc.SystemProductName = CurrentDeviceInfor->SystemProductName;
 			gpioDeviceDesc.SystemSku = CurrentDeviceInfor->SystemSku;

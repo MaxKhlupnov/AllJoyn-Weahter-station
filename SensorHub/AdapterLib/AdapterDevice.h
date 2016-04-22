@@ -238,10 +238,7 @@ namespace AdapterLib
 
         // identifier of the local device.
         Platform::String^           Id;
-
-        // operating system of the local device
-        Platform::String^           OperatingSystem;
-
+       
         // system firmware version of the local device
         Platform::String^           HardwareVersion;
 

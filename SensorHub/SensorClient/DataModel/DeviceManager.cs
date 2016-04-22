@@ -133,7 +133,7 @@ namespace SensorClient.DataModel
                     if (config == null) {
                         config = new InitialDeviceConfig();
                         ///HostName=MtcDataCenter.azure-devices.net;DeviceId=makhluDev;SharedAccessKey=Q3e1wSyrkpspcR06m11bNw==
-                        config.Key = @"Q3e1wSyrkpspcR06m11bNw==";//string.Empty;
+                        config.Key = @"QoGh9kGJus4hvWUX9Hhjag==";//string.Empty;
                         config.HostName = @"MtcDataCenter.azure-devices.net";//string.Empty;                        
                     }
                     existingDevice.Init(config, device);

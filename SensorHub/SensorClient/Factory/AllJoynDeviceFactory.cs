@@ -50,7 +50,7 @@ namespace SensorClient.Factory
         public static dynamic GetAllJoynDevice(AllJoynAboutDataView deviceDataView)
         {
 
-            var device = DeviceSchemaHelper.BuildDeviceStructure(deviceDataView.DeviceId, false);
+            var device = DeviceSchemaHelper.BuildDeviceStructure(deviceDataView.DeviceId, IS_SIMULATED_DEVICE);
 
             AssignDeviceProperties(deviceDataView, device);
             AssignCommands(device);
@@ -92,7 +92,21 @@ namespace SensorClient.Factory
             deviceProperties.Manufacturer = deviceDataView.Manufacturer;
             deviceProperties.ModelNumber = deviceDataView.ModelNumber;
             deviceProperties.SerialNumber = deviceDataView.DeviceId;
-            deviceProperties.FirmwareVersion = deviceDataView.SoftwareVersion;
+                           
+            ulong version = 0;
+            if (!ulong.TryParse(deviceDataView.SoftwareVersion, out version))
+            {
+                deviceProperties.FirmwareVersion = String.Empty;
+            }
+            else
+            {
+                deviceProperties.FirmwareVersion = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}.{3}",
+                            (version & 0xFFFF000000000000) >> 48,
+                            (version & 0x0000FFFF00000000) >> 32,
+                            (version & 0x00000000FFFF0000) >> 16,
+                            version & 0x000000000000FFFF);
+            }
+
             deviceProperties.Platform = deviceDataView.HardwareVersion;
 
             /*deviceProperties.Processor = "ARM";

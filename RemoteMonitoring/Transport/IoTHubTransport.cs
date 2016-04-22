@@ -85,24 +85,24 @@ namespace RemoteMonitoring.Transport
         /// <returns></returns>
         public async Task SendEventAsync(Guid eventId, dynamic eventData)
         {
-            byte[] bytes;
-            string objectType = EventSchemaHelper.GetObjectType(eventData);
-            var objectTypePrefix = _configurationProvider.GetConfigurationSettingValue("ObjectTypePrefix");
+            try {
+                byte[] bytes;
+                string objectType = EventSchemaHelper.GetObjectType(eventData);
+                var objectTypePrefix = _configurationProvider.GetConfigurationSettingValue("ObjectTypePrefix");
 
-            if (!string.IsNullOrWhiteSpace(objectType) && !string.IsNullOrEmpty(objectTypePrefix))
-            {
-                eventData.ObjectType = objectTypePrefix + objectType;
-            }
+                if (!string.IsNullOrWhiteSpace(objectType) && !string.IsNullOrEmpty(objectTypePrefix))
+                {
+                    eventData.ObjectType = objectTypePrefix + objectType;
+                }
 
-            // sample code to trace the raw JSON that is being sent
-            //string rawJson = JsonConvert.SerializeObject(eventData);
-            //Trace.TraceInformation(rawJson);
+                // sample code to trace the raw JSON that is being sent
+                //string rawJson = JsonConvert.SerializeObject(eventData);
+                //Trace.TraceInformation(rawJson);
 
-            bytes = _serializer.SerializeObject(eventData);
+                bytes = _serializer.SerializeObject(eventData);
 
-            var message = new Microsoft.Azure.Devices.Client.Message(bytes);
-            message.Properties["EventId"] = eventId.ToString();
-
+                var message = new Microsoft.Azure.Devices.Client.Message(bytes);
+                message.Properties["EventId"] = eventId.ToString();
             await AzureRetryHelper.OperationWithBasicRetryAsync(async () =>
             {
                 try
@@ -119,6 +119,15 @@ namespace RemoteMonitoring.Transport
                         ex);
                 }
             });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("{0}{0}*** Exception: Serialization error ***{0}{0}EventId: {1}{0}Event Data: {2}{0}Exception: {3}{0}{0}",
+                                       "\n",//Console.Out.NewLine,
+                                       eventId,
+                                       eventData,
+                                       ex);
+            }
         }
 
         public async Task SendEventBatchAsync(IEnumerable<Microsoft.Azure.Devices.Client.Message> messages)

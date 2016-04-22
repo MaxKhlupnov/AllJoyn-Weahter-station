@@ -45,44 +45,47 @@ namespace SensorClient.DataModel
 
         public WeatherStationConsumer()
         {
-            this.humidityWatcher = new HumidityWatcher(this.humidityBusAttachment);
-
-            this.humidityWatcher.Added += HumidityWatcher_Added;
-            this.humidityWatcher.Start();
+            
 
             this.temperatureWatcher = new TemperatureWatcher(this.temperatureBusAttachment);
             this.temperatureWatcher.Added += TemperatureWatcher_Added;
             this.temperatureWatcher.Start();
 
-            this.pressureWatcher = new PressureWatcher(this.pressureBusAttachment);
-            this.pressureWatcher.Added += PressureWatcher_Added;
-            this.pressureWatcher.Start();
+            /*   For easy debugging
 
-        /*    this.ControlPanelWatcher = new ControlPanelWatcher(controlPanelWatcherBusAttachment);
-            this.ControlPanelWatcher.Added += ControlPanelWatcher_Added;
-            this.ControlPanelWatcher.Start();*/
+                 this.humidityWatcher = new HumidityWatcher(this.humidityBusAttachment);
+                 this.humidityWatcher.Added += HumidityWatcher_Added;
+                 this.humidityWatcher.Start();
+
+                 this.pressureWatcher = new PressureWatcher(this.pressureBusAttachment);
+                 this.pressureWatcher.Added += PressureWatcher_Added;
+                 this.pressureWatcher.Start();*/
+
+            /*    this.ControlPanelWatcher = new ControlPanelWatcher(controlPanelWatcherBusAttachment);
+                this.ControlPanelWatcher.Added += ControlPanelWatcher_Added;
+                this.ControlPanelWatcher.Start();*/
 
         }
 
-  /*      private async void ControlPanelWatcher_Added(ControlPanelWatcher sender, AllJoynServiceInfo args)
-        {
-            ControlPanelJoinSessionResult joinResult = await ControlPanelConsumer.JoinSessionAsync(args, sender);
-            AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, 
-                this.controlPanelWatcherBusAttachment, args.SessionPort);
+        /*      private async void ControlPanelWatcher_Added(ControlPanelWatcher sender, AllJoynServiceInfo args)
+              {
+                  ControlPanelJoinSessionResult joinResult = await ControlPanelConsumer.JoinSessionAsync(args, sender);
+                  AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, 
+                      this.controlPanelWatcherBusAttachment, args.SessionPort);
 
-            if (joinResult.Status == AllJoynStatus.Ok)
-            {
-                
+                  if (joinResult.Status == AllJoynStatus.Ok)
+                  {
 
-            }
 
-        }*/
+                  }
+
+              }*/
 
         private async void PressureWatcher_Added(PressureWatcher sender, AllJoynServiceInfo args)
         {            
             PressureJoinSessionResult joinResult = await PressureConsumer.JoinSessionAsync(args, sender);
- //           AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, this.pressureBusAttachment, args.SessionPort);
- //           var device = SensorClient.Factory.AllJoynDeviceFactory.GetAllJoynDevice(view);
+            AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, this.pressureBusAttachment, args.SessionPort);
+            var device = SensorClient.Factory.AllJoynDeviceFactory.GetAllJoynDevice(view);
 
             if (joinResult.Status == AllJoynStatus.Ok)
             {
@@ -90,8 +93,8 @@ namespace SensorClient.DataModel
                 
                 var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
                 await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => {
-  //                  if (PerssureSensorSessionStarted != null)
- //                       PerssureSensorSessionStarted.Invoke(newSensor, device);
+                    if (PerssureSensorSessionStarted != null)
+                        PerssureSensorSessionStarted.Invoke(newSensor, device);
                 });
 
             }
@@ -129,8 +132,8 @@ namespace SensorClient.DataModel
         {
 
          HumidityJoinSessionResult joinResult = await HumidityConsumer.JoinSessionAsync(args, sender);
-  //       AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, this.humidityBusAttachment, args.SessionPort);
-  //         var device = SensorClient.Factory.AllJoynDeviceFactory.GetAllJoynDevice(view);
+         AllJoynAboutDataView view = await AllJoynAboutDataView.GetDataBySessionPortAsync(args.UniqueName, this.humidityBusAttachment, args.SessionPort);
+           var device = SensorClient.Factory.AllJoynDeviceFactory.GetAllJoynDevice(view);
 
             if (joinResult.Status == AllJoynStatus.Ok)
             {
@@ -138,8 +141,8 @@ namespace SensorClient.DataModel
 
                 var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
                 await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => {
- //                   if (HumiditySensorSessionStarted != null)
-                     //   HumiditySensorSessionStarted.Invoke(newSensor, device);
+                    if (HumiditySensorSessionStarted != null)
+                        HumiditySensorSessionStarted.Invoke(newSensor, device);
                 });
 
             }

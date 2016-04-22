@@ -8,6 +8,7 @@ using Windows.System.Threading;
 using System.ComponentModel;
 using System.Windows;
 using Windows.ApplicationModel.Core;
+using System.Diagnostics;
 
 using SensorClient.Common;
 
@@ -52,10 +53,12 @@ namespace SensorClient.DataModel
             weatherStationConsumer.TemperatureSensorSessionStarted += SensorStarted;
             weatherStationConsumer.PerssureSensorSessionStarted += SensorStarted;
 
+            StartUpdateUIThread();
+
         }
 
 
-        
+
 
         private void RunAsync()
         {
@@ -68,32 +71,7 @@ namespace SensorClient.DataModel
                     try
                     {
                         await deviceManager.StartDevicesAsync();
-                        await Task.Delay(TimeSpan.FromSeconds(SendTelemetryPeriod_Sec), cancellationTokenSource.Token);
-
-
-                        ////------
-                        bool hasMutex = false;
-                        try
-                        {
-                        
-                            hasMutex = mutex.WaitOne(1000);
-                            if (hasMutex)
-                            {
-                                foreach (AbstractSensor sensor in Sensors)
-                                {
-                                    await sensor.DoMeasure();
-                                    //connectHelper.sendMeasure(measure);
-                                }
-                            }
-                        }
-                        finally
-                        {
-                            if (hasMutex)
-                            {
-                                mutex.ReleaseMutex();
-                            }
-                        }
-                       
+                        await Task.Delay(TimeSpan.FromSeconds(SendTelemetryPeriod_Sec), cancellationTokenSource.Token);                    
  
                         
                     }
@@ -126,6 +104,50 @@ namespace SensorClient.DataModel
                     }
                 }
         }
-  
+
+        private void StartUpdateUIThread()
+        {
+
+            // Create a timer-initiated ThreadPool task to read data from AllJoyn
+                 ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
+                 {
+                     // Notify the UI to do an update.
+
+                     var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
+                    await dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, async () =>
+                     {
+                         bool hasMutex = false;
+                         try
+                         {
+                             hasMutex = mutex.WaitOne(100);
+                             // We have exlusive access to the mutex so can safely read the transfer file
+                             if (hasMutex)
+                             {
+                                 try {
+                                     foreach (AbstractSensor sensor in this.Sensors)
+                                     {
+                                         await sensor.DoMeasure();
+                                         //connectHelper.sendMeasure(measure);
+                                     }
+                                 }catch(Exception ex)
+                                 {                               
+                                     Debug.WriteLine(ex.Message);
+                                 }
+                             }
+                         }
+                         finally
+                         {
+                             if (hasMutex)
+                             {
+                                 mutex.ReleaseMutex();
+                             }
+                         }
+                     });
+
+
+                 }, TimeSpan.FromSeconds(2));
+               
+        }
+
     }
 }

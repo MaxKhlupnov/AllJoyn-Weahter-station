@@ -57,6 +57,7 @@ namespace SensorClient.DataModel.WeatherShield
         public void StartTelemetryData()
         {
             var remoteMonitorTelemetry = (SensorTelemetry)_telemetryController;
+            remoteMonitorTelemetry.TelemetryActive = true;
             Logger.LogInfo("Device {0}: Telemetry has started", DeviceID);
         }
 

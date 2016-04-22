@@ -38,6 +38,7 @@ namespace SensorClient
 
         public MainPage()
         {
+            DC.ShowLog();
             this.InitializeComponent();
           
             this.DataContext = new WeatherShieldViewModel();
