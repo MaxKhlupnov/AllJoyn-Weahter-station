@@ -162,10 +162,17 @@ QStatus AllJoynAbout::SetDeviceName(_In_z_ const wchar_t *value)
     return alljoyn_aboutdata_setdevicename(m_aboutData, stringValue.c_str(), DEFAULT_LANGUAGE_FOR_ABOUT);
 }
 
-QStatus AllJoynAbout::SetVersion(_In_z_ const wchar_t *value)
+QStatus AllJoynAbout::SetSoftwareVersion(_In_z_ const wchar_t *value)
 {
     std::string stringValue = To_Ascii_String(value);
     return alljoyn_aboutdata_setsoftwareversion(m_aboutData, stringValue.c_str());
+}
+
+QStatus AllJoynAbout::SetHardwareVersion(_In_z_ const wchar_t *value)
+{
+	std::string stringValue = To_Ascii_String(value);
+	return alljoyn_aboutdata_sethardwareversion(m_aboutData, stringValue.c_str());
+		//alljoyn_aboutdata_setsoftwareversion(m_aboutData, stringValue.c_str());
 }
 
 QStatus AllJoynAbout::SetDeviceId(_In_z_ const wchar_t * value)
@@ -242,7 +249,8 @@ QStatus AllJoynAbout::SetDefaultAboutData()
     SetApplicationGuid(DSB_DEFAULT_APP_GUID);
     SetManufacturer(UNKNOWN_MANUFACTURER);
     SetModel(DSB_DEFAULT_MODEL);
-    SetVersion(UNKNOWN_VERSION);
+    SetSoftwareVersion(UNKNOWN_VERSION);
+	SetHardwareVersion(UNKNOWN_VERSION);
     SetDescription(DSB_DEFAULT_DESCRIPTION);
 
     if (!alljoyn_aboutdata_isvalid(m_aboutData, DEFAULT_LANGUAGE_FOR_ABOUT))

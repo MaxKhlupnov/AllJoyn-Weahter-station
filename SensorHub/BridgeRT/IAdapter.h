@@ -194,30 +194,36 @@ namespace BridgeRT
         //
         // Device information
         //
-        property Platform::String^ Vendor
-        {
-            Platform::String^ get();
-        }
-        property Platform::String^ Model
-        {
-            Platform::String^ get();
-        }
-        property Platform::String^ Version
-        {
-            Platform::String^ get();
-        }
-        property Platform::String^ FirmwareVersion
-        {
-            Platform::String^ get();
-        }
-        property Platform::String^ SerialNumber
-        {
-            Platform::String^ get();
-        }
-        property Platform::String^ Description
-        {
-            Platform::String^ get();
-        }
+
+		property Platform::String^ SystemManufacturer
+		{
+			Platform::String^ get();
+		}
+		virtual property Platform::String^ Model
+		{
+			Platform::String^ get();
+		}
+		virtual property Platform::String^ HardwareVersion
+		{
+			Platform::String^ get();
+		}
+		virtual property Platform::String^ SoftwareVersion
+		{
+			Platform::String^ get();
+		}
+		virtual property Platform::String^ ID
+		{
+			Platform::String^ get();
+		}
+		virtual property Platform::String^ SerialNumber
+		{
+			Platform::String^ get();
+		}
+		virtual property Platform::String^ Description
+		{
+			Platform::String^ get();
+		}		
+       
 
         // Device properties
         property IAdapterPropertyVector^ Properties
@@ -337,7 +343,7 @@ namespace BridgeRT
         //
         // Adapter information:
         //
-        property Platform::String^ Vendor
+        property Platform::String^ SystemManufacturer
         {
             Platform::String^ get();
         }
@@ -345,10 +351,14 @@ namespace BridgeRT
         {
             Platform::String^ get();
         }
-        property Platform::String^ Version
+        property Platform::String^ SoftwareVersion
         {
             Platform::String^ get();
         }
+		property Platform::String^ HardwareVersion
+		{
+			Platform::String^ get();
+		}
         property Platform::String^ ExposedAdapterPrefix
         {
             Platform::String^ get();

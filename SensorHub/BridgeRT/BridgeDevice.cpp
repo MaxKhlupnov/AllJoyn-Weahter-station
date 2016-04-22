@@ -93,10 +93,11 @@ QStatus BridgeDevice::Initialize(IAdapterDevice ^device)
     m_about.SetApplicationName(DsbBridge::SingleInstance()->GetAdapter()->ExposedApplicationName->Data());
     m_about.SetApplicationGuid(DsbBridge::SingleInstance()->GetAdapter()->ExposedApplicationGuid);
     m_about.SetDeviceName(m_device->Name->Data());
-    m_about.SetManufacturer(m_device->Vendor->Data());
-    m_about.SetModel(m_device->Model->Data());
-    m_about.SetVersion(m_device->Version->Data());
-    m_about.SetDeviceId(m_device->SerialNumber->Data());
+	m_about.SetDeviceId(m_device->ID->Data());
+    m_about.SetManufacturer(m_device->SystemManufacturer->Data());
+    m_about.SetModel(m_device->SerialNumber->Data());
+    m_about.SetSoftwareVersion(m_device->SoftwareVersion->Data()); 	
+	m_about.SetHardwareVersion(m_device->HardwareVersion->Data());
     m_about.SetDescription(m_device->Description->Data());
 
     // create device properties

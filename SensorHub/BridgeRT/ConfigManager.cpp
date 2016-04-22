@@ -159,10 +159,12 @@ QStatus ConfigManager::ConnectToAllJoyn(_In_ IAdapter^ adapter)
 
     // set adapter info in about
     m_about.SetApplicationName(m_adapter->ExposedApplicationName->Data());
-    m_about.SetApplicationGuid(m_adapter->ExposedApplicationGuid);
-    m_about.SetManufacturer(m_adapter->Vendor->Data());
+    m_about.SetApplicationGuid(m_adapter->ExposedApplicationGuid);    
     m_about.SetDeviceName(m_adapter->AdapterName->Data());
-    m_about.SetVersion(m_adapter->Version->Data());
+	m_about.SetManufacturer(m_adapter->SystemManufacturer->Data());
+    m_about.SetSoftwareVersion(m_adapter->SoftwareVersion->Data());
+	m_about.SetHardwareVersion(m_adapter->HardwareVersion->Data());
+	
 
     status = InitializeCSPBusObjects();
     if (ER_OK != status)
